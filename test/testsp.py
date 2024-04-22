@@ -3,31 +3,35 @@ import re
 import pandas as pd
 import sys
 
-if len(sys.argv) > 1:
-    param = sys.argv[1]
-    print("传递的参数:", param)
-else:
-    print("没有传递参数")
+
 # 获取当前脚本的路径
 script_path = os.path.abspath(__file__)
 # 获取同级目录
 same_level_directory = os.path.dirname(script_path)
 # 指定要删除的文件名
 file_to_delete = "date_bk.xlsx"
-# 组合成完整的文件路径
-FILE_URL_OUT = os.path.join(same_level_directory, file_to_delete)
-FILE_URL_IN= same_level_directory+"/"+"bbb.xlsx"
+
+#默认文件路径用于测试代码
+FILE_URL_IN = r'C:\Users\asliu\Desktop\aaa.xlsx'
+FILE_URL_OUT = r"C:\Users\asliu\Desktop\a_bk.xlsx"
+#根据传入参数,拼接文件路径
+if len(sys.argv) > 1:
+    print("传递的参数:", sys.argv)
+    param = sys.argv[1]
+    FILE_URL_IN = os.path.join(same_level_directory, param)
+    FILE_URL_OUT = os.path.join(same_level_directory, file_to_delete)
+else:
+    print("没有传递参数")
+
 # 设置显示完整的列
 pd.set_option('display.max_columns', None)
 # 设置显示完整的行
 pd.set_option('display.max_rows', None)
 
 flagArr = ["主键", "sum", "YES", "NO", "是", "否", "主键不空", "主键唯一", "码值"]
-tableName = ["", ""]
 PRIMARY_KEY = "主键"
 
-# STRING_URL = r'C:\Users\asliu\Desktop\aaa.xlsx'
-# outputpath = r"C:\Users\asliu\Desktop\a_bk.xlsx"
+
 
 
 class DfExcle:
@@ -208,5 +212,5 @@ for index, row in df.iterrows():
         df.loc[index, df.columns[ex.col_num_sql2]] = tabCounts(row, 1)
 
 # 删除之前是生成的文件，并重新生成文件
-del_file(FILE_URL_OUT)
+# del_file(FILE_URL_OUT)
 df.to_excel(FILE_URL_OUT, index=False)

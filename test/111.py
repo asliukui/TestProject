@@ -22,7 +22,7 @@ df.loc[df["money"]>500:]    #查询列名为money，值大于500的所有行（�
 #多条件查询
 df.loc[(df["money"]<500) & (df["money"])>300&(df["name"] == "穷")]
 
-##1.5.屌用函数查询
+##1.5.调用函数查询
 df.loc[lambda df :(df["money"]<500) & (df["money"]>300),:]
 def query(df):
     return df.index.str.startswith("1") & df["备注"].notnull()
@@ -43,3 +43,15 @@ df.loc[1:3]
 
 ##根据列名获取当前列的index
 print(df.columns.get_loc("new_tab"))
+
+#添加列
+# 第一种方法：创建一个示例 DataFrame
+data = {'A': [1, 2, 3], 'B': [4, 5, 6]}
+df = pd.DataFrame(data)
+
+
+# 第二种方法：定义要添加的空列名列表
+new_columns = ['C', 'D', 'E']
+
+# 使用 assign 方法批量添加空列
+df = df.assign(**{column: None for column in new_columns})

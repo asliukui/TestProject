@@ -10,7 +10,7 @@ same_level_directory = os.path.dirname(script_path)
 file_to_delete = "date_bk.xlsx"
 
 # 默认文件路径用于测试代码
-FILE_URL_IN = r'C:\Users\asliu\Desktop\中间表-20240422.xlsx'
+FILE_URL_IN = r'C:\Users\asliu\Desktop\aaa.xlsx'
 FILE_URL_OUT = r"C:\Users\asliu\Desktop\a_bk.xlsx"
 
 
@@ -46,8 +46,8 @@ def init_pd_config(pd):
 column_list = ["字段名称", "中文名称", "字段类型", "可空", "", "备注"
     , "返回目录", "new_tab", "old_tab", "old_field", "where"
     , "intent1", "sql1", "intent2", "sql2", "intent3", "sql3"]
-flagArr = ["主键", "sum", "YES", "NO", "是", "否", "主键不空", "主键唯一", "码值"]
-PRIMARY_KEY = "主键"
+flagArr = ["主键", "sum", "YES", "NO", "是", "否", "主键不空", "主键唯一", "码值","字段取值比对"]
+PRIMARY_KEY = "是"
 
 
 # # 列值索引
@@ -149,6 +149,8 @@ def test_intent(field_en: str, field_cn: str, flag=''):
         strlog = f"验证：目标表数据的唯一性"
     elif flag == flagArr[8]:  # 码值
         strlog = f"验证：{field_en}({field_cn})码值在落标码值范围内"
+    elif flag == flagArr[9]:  # 字段取值比对
+        strlog = f"验证：{field_en}({field_cn})取值的正确性"
     else:
         strlog = ""
     return strlog
@@ -159,6 +161,6 @@ def get_tab_tcount(row, sbean, tab_index=2):
     if tab_index in [sbean.col_num_new_tab, sbean.col_num_old_tab]:
         return f"select count(1) as tcount from {row[column_list[tab_index]]}"
     elif tab_index == 2:
-        return f"select 0 as tcount"
+        return f"select 0 as tcount from dual"
     else:
-        return f"select '' as tcount"
+        return f"select '' as tcount from dual"

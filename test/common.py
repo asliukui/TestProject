@@ -13,7 +13,8 @@ file_to_delete = "date_bk.xlsx"
 FILE_URL_IN = r'C:\Users\asliu\Desktop\aaa.xlsx'
 FILE_URL_OUT = r"C:\Users\asliu\Desktop\a_bk.xlsx"
 
-
+FILE_URL_IN = os.path.join(same_level_directory, "xintou.xlsx")
+FILE_URL_OUT = os.path.join(same_level_directory, file_to_delete)
 # 根据传入参数,拼接文件路径
 def get_sys_args():
     if len(sys.argv) > 1:
@@ -129,12 +130,12 @@ def check_array(array1, columns_arr):
 
 # 测试意图,字段英文名，中文名，标示
 def test_intent(field_en: str, field_cn: str, flag=''):
-    if re.search(r'[a-zA-Z]', field_cn):
-        index = re.search(r'[a-zA-Z]', field_cn).start()
-        if index > 1:
-            field_cn = field_cn[:index]
-        else:
-            field_cn = field_cn[:8]
+    # if re.search(r'[a-zA-Z]', field_cn):
+    #     index = re.search(r'[a-zA-Z]', field_cn).start()
+    #     if index > 1:
+    #         field_cn = field_cn[:index]
+    #     else:
+    #         field_cn = field_cn[:8]
     if flag == flagArr[0]:  # 主键
         strlog = f"验证：{field_en}({field_cn})取值的正确性"
     elif flag == flagArr[1]:  # sum

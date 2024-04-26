@@ -54,7 +54,10 @@ def get_field_true(index, row, df, tab_index=4):
     if tab_index == 0:  # 查自己
         return f"select count(1) as tcount from table_tar where nvl({df.iloc[0, 1]},'') !=''"
     elif tab_index == 1:  # 1张中间表 统计数据量
-        return f"select count(1) as tcount from table_tar t,tableA a where t.{df.iloc[0, 1]} = nvl({df.iloc[0, 20].replace(',', '')},'') and nvl(t.{row.iloc[1]},'') = nvl(a.{row.iloc[16].replace(',', '')},'') "
+        if index==0:
+            return f"select count(1) as tcount from table_tar t,(select {df.iloc[0, 20].replace(',', '')} from tableA ) a where  nvl(t.{row.iloc[1]},'') = nvl(a.{row.iloc[16].replace(',', '')},'') "
+        else:
+            return f"select count(1) as tcount from table_tar t,(select {df.iloc[0, 20].replace(',', '')},{row.iloc[20].replace(',', '')} from tableA ) a where t.{df.iloc[0, 1]} = nvl(a.{df.iloc[0, 16].replace(',', '')},'') and nvl(t.{row.iloc[1]},'') = nvl(a.{row.iloc[16].replace(',', '')},'') "
     elif tab_index == 2:  # 2张中间表
         if index == 0:
             return (f"select count(1) as tcount from table_tar t,("
@@ -161,7 +164,7 @@ for sheet in sheets_data:
         if df.iloc[index, 4] == common.PRIMARY_KEY or (df.iloc[index, 4] == "Y"):  # 1.主键唯一;2.执行语句
             df.loc[df_rows + 1, df.columns[sbean.col_num_intent1]] = common.test_intent("", "", common.flagArr[7])  #
             df.loc[df_rows + 1, df.columns[
-                sbean.col_num_sql1]] = f"select count (1) tcount from table_tar where nvl({df.iloc[index, 1]},'') !='' group by {df.iloc[index, 1]} "
+                sbean.col_num_sql1]] = f"select count (1) as tcount from (select count (1) as tcount from table_tar where nvl({df.iloc[index, 1]},'') !='' group by {df.iloc[index, 1]}) "
             df.loc[df_rows + 1, df.columns[sbean.col_num_sql2]] = get_tab_tcount(0)
         if (df.iloc[index, 5] == "否") or (df.iloc[index, 5] == "N"):  # 1.测试意图,判断非主键，不可为空 2.执行sql语句
             if isNotNUll(df.iloc[index, 1]):
@@ -171,9 +174,15 @@ for sheet in sheets_data:
             # df.loc[index, df.columns[
             #     sbean.col_num_sql1]] = f"select count(1) as tcount from table_tar where nvl({df.iloc[index, 1]},'') !=''"  # sql判定值不为空
             # df.loc[index, df.columns[sbean.col_num_sql2]] = get_tab_tcount(0)
-        if isNotNUll(df.iloc[index, 8]):  # 码值
+        if isNotNUll(df.iloc[index, 8]):  # 码值,码值在落标码值范围内
             df.loc[index, df.columns[sbean.col_num_intent1]] = common.test_intent(row.iloc[2], row.iloc[1],
                                                                                   common.flagArr[8])
+            in_code = df.iloc[index,8]
+            result = [i.split('-')[0] for i in in_code.split()]
+            result = str(result).replace('[',"(")
+            result = str(result).replace(']', ")")
+            # print(str(result))
+            df.loc[index, df.columns[sbean.col_num_sql1]]= f"select count(1) as tcount from table_tar where {df.iloc[index,1]} not in {result}"
         # print(df.iloc[index,8])
         # 验证数据的准确性
         df.loc[index, df.columns[sbean.col_num_intent3]] = common.test_intent(row.iloc[2], row.iloc[1],

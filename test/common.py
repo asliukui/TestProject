@@ -13,7 +13,7 @@ file_to_delete = "date_bk.xlsx"
 FILE_URL_IN = r'C:\Users\asliu\Desktop\aaa.xlsx'
 FILE_URL_OUT = r"C:\Users\asliu\Desktop\a_bk.xlsx"
 
-FILE_URL_IN = os.path.join(same_level_directory, "xintou.xlsx")
+FILE_URL_IN = os.path.join(same_level_directory, "xintou02.xlsx")
 FILE_URL_OUT = os.path.join(same_level_directory, file_to_delete)
 # 根据传入参数,拼接文件路径
 def get_sys_args():

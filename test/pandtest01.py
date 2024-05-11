@@ -1,16 +1,8 @@
-import pandas as pd
-STRING_URL = r'C:\Users\asliu\Desktop\aaa.xlsx'
-# 读取 Excel 文件
-data = pd.read_excel(STRING_URL, sheet_name=None)
-
-# 存储每个 sheet 的 DataFrame
-sheets_data = {}
-
-# 遍历每个 sheet
-for sheet_name in data.keys():
-    sheets_data[sheet_name] = data[sheet_name]
-
-# 打印每个 sheet 的前 5 行数据
-for sheet, df in sheets_data.items():
-    print(f'Sheet: {sheet}')
-    print(df.head(10))
+in_code = """FS01-正常贷款
+FS03-逾期
+FS10-结清
+FS11-冲正"""
+result = [i.split('-')[0] for i in in_code.split()]
+result = str(result).replace('[',"(")
+result = str(result).replace(']', ")")
+print("not in "+result)

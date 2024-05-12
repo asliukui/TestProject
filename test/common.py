@@ -1,6 +1,5 @@
 import os
 import sys
-import re
 
 # 获取当前脚本的路径
 script_path = os.path.abspath(__file__)
@@ -9,12 +8,11 @@ same_level_directory = os.path.dirname(script_path)
 # 指定要删除的文件名
 file_to_delete = "date_bk.xlsx"
 
-# 默认文件路径用于测试代码
-FILE_URL_IN = r'C:\Users\asliu\Desktop\aaa.xlsx'
-FILE_URL_OUT = r"C:\Users\asliu\Desktop\a_bk.xlsx"
-
-FILE_URL_IN = os.path.join(same_level_directory, "xintou02.xlsx")
+FILE_URL_IN = os.path.join(same_level_directory, "pls_迁出至新信投_mapping_0510.xlsx")
+# FILE_URL_IN = os.path.join(same_level_directory, "xintou02.xlsx")
 FILE_URL_OUT = os.path.join(same_level_directory, file_to_delete)
+
+
 # 根据传入参数,拼接文件路径
 def get_sys_args():
     if len(sys.argv) > 1:
@@ -47,30 +45,8 @@ def init_pd_config(pd):
 column_list = ["字段名称", "中文名称", "字段类型", "可空", "", "备注"
     , "返回目录", "new_tab", "old_tab", "old_field", "where"
     , "intent1", "sql1", "intent2", "sql2", "intent3", "sql3"]
-flagArr = ["主键", "sum", "YES", "NO", "是", "否", "主键不空", "主键唯一", "码值","字段取值比对"]
+flagArr = ["主键", "sum", "YES", "NO", "是", "否", "主键不空", "主键唯一", "码值", "字段取值比对"]
 PRIMARY_KEY = "是"
-
-
-# # 列值索引
-# tit_str_index = {"字段名称": 0
-#     , "中文名称": 1
-#     , "字段类型": 2
-#     , "可空": 3
-#     , "mid_asset_iou_info_total": 4
-#     , "备注": 5
-#     , "返回目录": 6
-#     , "new_tab": 7
-#     , "old_tab": 8
-#     , "old_field": 9
-#     , "where": 10
-#     , "intent1": 11
-#     , "sql1": 12
-#     , "intent2": 13
-#     , "sql2": 14
-#     , "intent3": 15
-#     , "sql3": 16}
-# #   键值互换的map {0: '字段名称', 1: '中文名称'...}
-# tit_index_str = {value: key for key, value in tit_str_index.items()}
 
 
 class SheetBean:

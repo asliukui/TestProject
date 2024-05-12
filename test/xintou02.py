@@ -8,17 +8,20 @@ import Bean
 2.在安装完python后安装pandas：pip install pandas
 3.在安装完python后安装openpyxl：pip install openpyxl
 4.安装xlsxwriter：pip install xlsxwriter
-阿里云仓库镜像，用于下载依赖包：http://mirrors.aliyun.com/pypi/simple/
+#可忽略：阿里云仓库镜像，用于下载依赖包：http://mirrors.aliyun.com/pypi/simple/
+5.执行脚本
+5.1.将mapping文件放入xintou02.py同文件夹内
+5.2.执行脚本：python xintou02.py 你的文件名称.xlsx，如:python xintou02.py 信投mapping.xlsx
+6.输出文件为：date_bk.xlsx，在xintou02.py同文件夹内
 """
 # 获取启动脚本时传入的参数
 common.get_sys_args()
 common.init_pd_config(pd)
 
-# 读取 Excel 文件，获取所有sheets
+# 读取 Excel 文件，获取所有sheets，'None'表示读取所有的sheet，可以换成单个sheet名
 df_all = pd.read_excel(common.FILE_URL_IN, sheet_name=None)
 # 创建容器，存储每个 sheet 的 DataFrame
 sheets_data = {}
-sheets_attr = {}
 # 创建容器，存储每个 sheet 的属性。
 # 遍历每个 sheet,并存入字典中
 for sheet_name in df_all.keys():
@@ -26,17 +29,15 @@ for sheet_name in df_all.keys():
         continue
     df = df_all[sheet_name]
     sheets_data[sheet_name] = df
-    sheets_attr[sheet_name] = common.SheetBean(df)
+
+#  计数器，显示处理进度，提高脚本等待的体验。
 count_num = 0
 for sheet in sheets_data:
     count_num+=1
     print(len(sheets_data)-count_num,sheet)
-
     df = sheets_data[sheet]
-    sbean = sheets_attr[sheet]
     # sys.exit()
     # 总行数和总列数
-    # print(df.shape)
     df_rows = df.shape[0]
     df_cols = df.shape[1]
     # 选择 0 到 最大 列,替换nan none 为"",并转换成字符串格式
@@ -55,7 +56,7 @@ for sheet in sheets_data:
             Bean.MainBean(df.columns[1], df.iloc[index, 0], df.iloc[index, 1], df.iloc[index, 2], df.iloc[index, 3],
                           df.iloc[index, 4], df.iloc[index, 5], df.iloc[index, 6], df.iloc[index, 7], df.iloc[index, 8],
                           df.iloc[index, 9], df.iloc[index, 10], df.iloc[index, 11], df.iloc[index, 12]))
-        # 根据df.iloc[index, 5]判断是否为主键，若 df.iloc[index, 4] = '是' ,则df.iloc[index, 1]存入primaryKeyList,配上自增序号
+        # 根据df.iloc[index, 4]判断是否为主键，若 df.iloc[index, 4] = '是' ,则df.iloc[index, 1]存入primaryKeyList
         if df.iloc[index, 4] == common.PRIMARY_KEY:
             primaryKeyList.append(index)
         # 初始化mapBean,根据'原表字段英文名'列判断，都为空则该系统映射，否则有字段映射
@@ -77,7 +78,7 @@ for sheet in sheets_data:
         if not df.iloc[5:, 26].isnull().all():
             # 去除第28列的空值
             df_no_na = df.iloc[:, 28].dropna()
-            # 获取最后一个值,作为表关联，如果没有from 关键字，则赋值table+table_falg
+            # 获取最后一个值,作为表关联，如果没有from 和where 关键字，则赋值table+table_falg
             table_ctach = df_no_na.iloc[-1]
             # 初始化Bean.MapBean,并存入mapList2。mapbean初始化的参数从25开始到36，df.iloc[index,25]
             mapList_2.append(
@@ -342,3 +343,4 @@ common.del_file()
 with pd.ExcelWriter(common.FILE_URL_OUT, engine='xlsxwriter') as writer:
     for sheet_name, df_sheet in df_all.items():
         df_sheet.to_excel(writer, sheet_name=sheet_name, index=False)
+print("生成文件成功：" + common.FILE_URL_OUT)

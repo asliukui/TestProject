@@ -42,8 +42,7 @@ count_num = 0
 for sheet in sheets_data:
     count_num += 1
     print(len(sheets_data) - count_num, sheet)
-    ndf = pd.DataFrame()
-    # ndf 添加列名['案例名称', '案例描述', '案例标签', '数据源1', '执行SQL1', '数据源2', '执行SQL2', '验证方式', 'SQL返回字段名', '结果对比方式', '预期结果（单库比较时填写）', '问题级别', '设计人', '创建时间', '案例有效性', '备注']
+
     ndf = pd.DataFrame(columns=common.test_file_clos)
     ndf.loc[1] = common.test_file_des
 
@@ -350,8 +349,9 @@ for sheet in sheets_data:
             df.loc[5, df.columns[col_num_ct_sql]] = f"select count(1) as tcount from {mainList[0].table_name}"
             df.loc[6, df.columns[col_num_ct_sql]] = f"select 0 as tcount from dual"
             df.loc[7, df.columns[col_num_ct_sql]] = sqlcp7
+
     df_all[sheet] = df
-    df_all2[sheet] = ndf
+    df_all2[sheet] = common.fz(df,ndf)
 # 删除之前是生成的文件，并重新生成文件
 common.del_file()
 # 将所有的sheet页合并成一个文件但每个sheet页写入到文件的不同工作表中

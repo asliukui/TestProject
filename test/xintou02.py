@@ -337,7 +337,7 @@ for sheet in sheets_data:
                 sqlcp4 += ")\n"
             if sqlcp4_cnt > 0:
                 df.loc[4, df.columns[col_num_ct_sql]] = sqlcp4
-            df.loc[5, df.columns[col_num_ct_sql]] = f"select count(1) as toucnt from {mainList[0].table_name}"
+            df.loc[5, df.columns[col_num_ct_sql]] = f"select count(1) as tcount from {mainList[0].table_name}"
             df.loc[6, df.columns[col_num_ct_sql]] = f"select 0 as tcount from dual"
             df.loc[7, df.columns[col_num_ct_sql]] = sqlcp7
     df_all[sheet] = df

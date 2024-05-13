@@ -1,3 +1,5 @@
+from typing import Dict, Any
+
 import pandas as pd
 import common
 import Bean
@@ -23,6 +25,8 @@ common.init_pd_config(pd)
 # 读取 Excel 文件，获取所有sheets，'None'表示读取所有的sheet，可以换成单个sheet名
 # df_all = pd.read_excel(common.FILE_URL_IN, sheet_name="贷款申请信息-借据列表")
 df_all = pd.read_excel(common.FILE_URL_IN, sheet_name=None)
+# 创建另一个 df_all的类型
+df_all2: Dict[Any, pd.DataFrame] = {}
 # 创建容器，存储每个 sheet 的 DataFrame
 sheets_data = {}
 # 创建容器，存储每个 sheet 的属性。
@@ -38,6 +42,12 @@ count_num = 0
 for sheet in sheets_data:
     count_num += 1
     print(len(sheets_data) - count_num, sheet)
+    ndf = pd.DataFrame()
+    # ndf 添加列名['案例名称', '案例描述', '案例标签', '数据源1', '执行SQL1', '数据源2', '执行SQL2', '验证方式', 'SQL返回字段名', '结果对比方式', '预期结果（单库比较时填写）', '问题级别', '设计人', '创建时间', '案例有效性', '备注']
+    ndf = pd.DataFrame(columns=common.test_file_clos)
+    ndf.loc[1] = common.test_file_des
+
+
     df = sheets_data[sheet]
     # sys.exit()
     # 总行数和总列数
@@ -341,7 +351,7 @@ for sheet in sheets_data:
             df.loc[6, df.columns[col_num_ct_sql]] = f"select 0 as tcount from dual"
             df.loc[7, df.columns[col_num_ct_sql]] = sqlcp7
     df_all[sheet] = df
-
+    df_all2[sheet] = ndf
 # 删除之前是生成的文件，并重新生成文件
 common.del_file()
 # 将所有的sheet页合并成一个文件但每个sheet页写入到文件的不同工作表中
@@ -349,3 +359,13 @@ with pd.ExcelWriter(common.FILE_URL_OUT, engine='xlsxwriter') as writer:
     for sheet_name, df_sheet in df_all.items():
         df_sheet.to_excel(writer, sheet_name=sheet_name, index=False)
 print("生成文件成功：" + common.FILE_URL_OUT)
+
+with pd.ExcelWriter(common.FILE_URL_OUT2, engine='xlsxwriter') as writer:
+    for sheet_name, df_sheet in df_all2.items():
+        df_sheet.to_excel(writer, sheet_name=sheet_name, index=False)
+print("生成文件成功：" + common.FILE_URL_OUT2)
+
+
+
+
+

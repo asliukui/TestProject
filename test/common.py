@@ -6,19 +6,22 @@ PRIMARY_KEY = "是"
 FLAG_SYS_1 = "L"
 FLAG_SYS_2 = "P"
 FLAG_SYS_3 = "S"
-
-
+test_file_clos = ['案例名称', '案例描述', '案例标签', '数据源1', '执行SQL1', '数据源2', '执行SQL2', '验证方式', 'SQL返回字段名', '结果对比方式', '预期结果（单库比较时填写）', '问题级别', '设计人', '创建时间', '案例有效性', '备注']
+test_file_des = ["描述此条案例对应的具体测试意图\n注：①同一个表中，测试意图不能重复 ②语句通顺、可读、清晰明了，便于读者有效获取测试验证的意图","描述具体验证表\n格式：表英文名称_表中文名称","对案例进行归类，\n包含但不限于：汇总检查，明细检查，字段约束检查，数据落标检查",
+    "待验证数据库，需要与测试工具配置一致，对应加工前数据","数据来源1中取数SQL脚本","待验证数据库，需要与测试工具中参数配置-数据源配置中一致，对应加工后数据存放的数据库",
+    "据来源2中取数SQL脚本","固定值：结果集","固定值：空","固定值：等于","固定值：空","固定值：严重","案例编写人名称\n注：若该条案例存在修订，则更新为最新修订人","描述案例新增的时间，YYYY/MM/DD","此条案例操作类型及有效性说明，值类型（有效【默认】，无效）\n注：首次导入到测试管理平台中，均为有效，因此默认值-有效。",
+    "此条案例的备注说明"]
 # 获取当前脚本的路径
 script_path = os.path.abspath(__file__)
 # 获取同级目录
 same_level_directory = os.path.dirname(script_path)
 # 设置输出文件名，如果存在先就删除，文件打开状态无法删除
 file_to_delete = "date_bk.xlsx"
-
-# FILE_URL_IN = os.path.join(same_level_directory, "xintou.xlsx")
-FILE_URL_IN = os.path.join(same_level_directory, "pls_迁出至新信投_mapping_0510.xlsx")
+file_to_delete2 = "date_tar_bk.xlsx"
+FILE_URL_IN = os.path.join(same_level_directory, "xintou_dev.xlsx")
+# FILE_URL_IN = os.path.join(same_level_directory, "pls_迁出至新信投_mapping_0510.xlsx")
 FILE_URL_OUT = os.path.join(same_level_directory, file_to_delete)
-
+FILE_URL_OUT2 = os.path.join(same_level_directory, file_to_delete2)
 
 # 根据传入参数,拼接文件路径
 def get_sys_args():
@@ -43,6 +46,9 @@ def del_file():
         print(f"文件 {FILE_URL_OUT} 已删除。")
     else:
         print(f"文件 {FILE_URL_OUT} 不存在。")
+    if os.path.exists(FILE_URL_OUT2):
+        # 如果文件存在，则删除它
+        os.remove(FILE_URL_OUT2)
 
 
 def init_pd_config(pd):

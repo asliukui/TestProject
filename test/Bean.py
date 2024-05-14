@@ -33,8 +33,9 @@ class MapBean:
         if self.source_field_en == '':
             self.source_field_en = 'Temp'+table_flag
         #  给表关联条件赋值，如果为空，就赋值为 table+table_flag
+
         if 'from' in table_name.lower() or 'where' in table_name.lower():
-            if 'from' not in table_name.lower():
+            if 'from' not in table_name.lower()[0:5]:
                 self.table_name = 'from '+table_name
             else:
                 self.table_name = table_name

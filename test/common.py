@@ -1,4 +1,5 @@
 import os
+import re
 import sys
 
 PRIMARY_KEY = "是"
@@ -32,7 +33,7 @@ same_level_directory = os.path.dirname(script_path)
 file_to_delete = "date_bk.xlsx"
 file_to_delete2 = "date_tar_bk.xlsx"
 # FILE_URL_IN = os.path.join(same_level_directory, "xintou_dev.xlsx")
-FILE_URL_IN = os.path.join(same_level_directory, "pls_迁出至新信投_mapping_0510_base.xlsx")
+FILE_URL_IN = os.path.join(same_level_directory, "供应链系统中间表数据据映射20240514(迁入).xlsx")
 FILE_URL_OUT = os.path.join(same_level_directory, file_to_delete)
 FILE_URL_OUT2 = os.path.join(same_level_directory, file_to_delete2)
 
@@ -320,9 +321,11 @@ def fz(sdf, tdf):
     init_row_nm=2
     sum_num = sdf[sdf.columns[col_num_hh_field]].notnull().sum()
 
-    if str(sdf.columns[1])[0].isalpha():
+    if re.match(r'[a-zA-Z]', sdf.columns[0][1]):
+        tab_en=str(sdf.columns[1])
         tab_en_cn =  str(sdf.columns[1]) + "-" + str(sdf.iloc[0, 1])
     else:
+        tab_en = str(sdf.iloc[0, 1])
         tab_en_cn = str(sdf.iloc[0, 1])+ "-" +str(sdf.columns[1])
     for i in range(5):
         # sdf.loc[i + 3, sdf.columns[col_num_code_sql]]
@@ -383,7 +386,7 @@ def fz(sdf, tdf):
             elif index == 5:
                 tdf.loc[i + init_row_nm, column] = "迁出库"
             elif index == 6:
-                tdf.loc[i + init_row_nm, column] = f"select count(1) as tcount from {sdf.columns[1]}"
+                tdf.loc[i + init_row_nm, column] = f"select count(1) as tcount from {tab_en}"
             elif index == 7:
                 tdf.loc[i + init_row_nm, column] = "结果集"
             elif index == 8:

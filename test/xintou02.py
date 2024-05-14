@@ -1,3 +1,4 @@
+import re
 from typing import Dict, Any
 
 import pandas as pd
@@ -18,6 +19,9 @@ import Bean
 如:python3 xintou02.py "SCB_新一代新信投项目群_新信投系统中间表数据据映射mapping-V0.01(pls迁出至新信投) -规则情况统计_20240511.xlsx"
 6.输出文件为：date_bk.xlsx，在xintou02.py同文件夹内
 """
+
+#开关，信投映射在字段英文名列-False，映射在映射规则-True
+MAPPING_KEY = False
 # 获取启动脚本时传入的参数
 common.get_sys_args()
 common.init_pd_config(pd)
@@ -46,7 +50,6 @@ for sheet in sheets_data:
     ndf = pd.DataFrame(columns=common.test_file_clos)
     ndf.loc[1] = common.test_file_des
 
-
     df = sheets_data[sheet]
     # sys.exit()
     # 总行数和总列数
@@ -58,57 +61,72 @@ for sheet in sheets_data:
     mapList_1 = []
     mapList_2 = []
     mapList_3 = []
-    L = df.iloc[0, 13][0]
-    P = df.iloc[0, 25][0]
-    S = df.iloc[0, 37][0]
+    # L = df.iloc[0, 13][0]
+    # P = df.iloc[0, 25][0]
+    # S = df.iloc[0, 37][0]
     # 表主键集合
     primaryKeyList = []
     table_catch1 = ""
     table_catch2 = ""
     table_catch3 = ""
-    # 初始化sql关联字段，匹配对应系统标识 table_L
-    if not df.iloc[5:, 14].isnull().all():
-        # 去除第16列的空值
-        df_no_na = df.iloc[:, 16].dropna()
-        # 获取最后一个值,作为表关联，如果没有from 关键字，则赋值table+table_falg
-        table_catch1 = common.get_table_catch_sys(common.FLAG_SYS_1, df_no_na.iloc[-1])
-    if not df.iloc[5:, 26].isnull().all():
-        df_no_na = df.iloc[:, 28].dropna()
-        table_catch2 = common.get_table_catch_sys(common.FLAG_SYS_2, df_no_na.iloc[-1])
-    if not df.iloc[5:, 38].isnull().all():
-        df_no_na = df.iloc[:, 40].dropna()
-        table_catch3 = common.get_table_catch_sys(common.FLAG_SYS_3, df_no_na.iloc[-1])
+    if MAPPING_KEY:
+        if not df.iloc[5:, 20].isnull().all():
+            # 去除第16列的空值
+            table_catch1 = df.iloc[:, 20].dropna().iloc[-1]
+        if not df.iloc[5:, 32].isnull().all():
+            table_catch2 = df.iloc[:, 32].dropna().iloc[-1]
+        if not df.iloc[5:, 44].isnull().all():
+            table_catch3 = df.iloc[:, 44].dropna().iloc[-1]
+    else:
+        # 初始化sql关联字段，匹配对应系统标识 table_L
+        if not df.iloc[5:, 14].isnull().all():
+            # 去除第16列的空值
+            df_no_na = df.iloc[:, 16].dropna()
+            # 获取最后一个值,作为表关联，如果没有from 关键字，则赋值table+table_falg
+            table_catch1 = common.get_table_catch_sys(common.FLAG_SYS_1, df_no_na.iloc[-1])
+        if not df.iloc[5:, 26].isnull().all():
+            df_no_na = df.iloc[:, 28].dropna()
+            table_catch2 = common.get_table_catch_sys(common.FLAG_SYS_2, df_no_na.iloc[-1])
+        if not df.iloc[5:, 38].isnull().all():
+            df_no_na = df.iloc[:, 40].dropna()
+            table_catch3 = common.get_table_catch_sys(common.FLAG_SYS_3, df_no_na.iloc[-1])
+
+    # 初始化表英文名，因为源系统中英文位置会互换。。。
+    if re.match(r'[a-zA-Z]', df.columns[1][0]):
+        tab_en_cn = str(df.columns[1])
+    else:
+        tab_en_cn = str(df.iloc[0, 1])
+
     # 初始化：目标表 实体类集合
     for index, row in df.iterrows():
         if index <= 2: continue
         mainList.append(
-            Bean.MainBean(df.columns[1], df.iloc[index, 0], df.iloc[index, 1], df.iloc[index, 2], df.iloc[index, 3],
+            Bean.MainBean(tab_en_cn, df.iloc[index, 0], df.iloc[index, 1], df.iloc[index, 2], df.iloc[index, 3],
                           df.iloc[index, 4], df.iloc[index, 5], df.iloc[index, 6], df.iloc[index, 7], df.iloc[index, 8],
                           df.iloc[index, 9], df.iloc[index, 10], df.iloc[index, 11], df.iloc[index, 12]))
         # 根据df.iloc[index, 4]判断是否为主键，若 df.iloc[index, 4] = '是' ,则df.iloc[index, 1]存入primaryKeyList
-        if df.iloc[index, 4] == common.PRIMARY_KEY:
+        if df.iloc[index, 4] in (common.PRIMARY_KEY,'Y'):
             primaryKeyList.append(index)
         # 初始化mapBean,根据'原表字段英文名'列判断，都为空则该系统映射，否则有字段映射
         # 用pandas判断16列第5行以后的值是否为都空，第一段系统
         if not df.iloc[5:, 14].isnull().all():
             # 初始化Bean.MapBean,并存入mapList1。mapbean初始化的参数从13开始到24，df.iloc[index,13]
-
             mapList_1.append(
-                Bean.MapBean(df.iloc[index, 13], df.iloc[index, 14], df.iloc[index, 15], df.iloc[index, 16],
+                Bean.MapBean(df.iloc[index, 13], df.iloc[index, 14], df.iloc[index, 15], df.iloc[index, 20] if MAPPING_KEY else df.iloc[index, 16],
                              df.iloc[index, 17], df.iloc[index, 18], df.iloc[index, 19], df.iloc[index, 20],
                              df.iloc[index, 21], df.iloc[index, 22], df.iloc[index, 23], df.iloc[index, 24],
                              df.iloc[index, 4], common.FLAG_SYS_1, table_catch1))
         if not df.iloc[5:, 26].isnull().all():
             # 初始化Bean.MapBean,并存入mapList2。mapbean初始化的参数从25开始到36，df.iloc[index,25]
             mapList_2.append(
-                Bean.MapBean(df.iloc[index, 25], df.iloc[index, 26], df.iloc[index, 27], df.iloc[index, 28],
+                Bean.MapBean(df.iloc[index, 25], df.iloc[index, 26], df.iloc[index, 27], df.iloc[index, 32]if MAPPING_KEY else df.iloc[index, 28],
                              df.iloc[index, 29], df.iloc[index, 30], df.iloc[index, 31], df.iloc[index, 32],
                              df.iloc[index, 33], df.iloc[index, 34], df.iloc[index, 35], df.iloc[index, 36],
                              df.iloc[index, 4], common.FLAG_SYS_2, table_catch2))
         if not df.iloc[5:, 38].isnull().all():
             # 初始化Bean.MapBean,并存入mapList3。mapbean初始化的参数从37开始到48，df.iloc[index,37]
             mapList_3.append(
-                Bean.MapBean(df.iloc[index, 37], df.iloc[index, 38], df.iloc[index, 39], df.iloc[index, 40],
+                Bean.MapBean(df.iloc[index, 37], df.iloc[index, 38], df.iloc[index, 39], df.iloc[index, 44]if MAPPING_KEY else df.iloc[index, 40],
                              df.iloc[index, 41], df.iloc[index, 42], df.iloc[index, 43], df.iloc[index, 44],
                              df.iloc[index, 45], df.iloc[index, 46], df.iloc[index, 47], df.iloc[index, 48],
                              df.iloc[index, 4], common.FLAG_SYS_3, table_catch3))
@@ -142,7 +160,7 @@ for sheet in sheets_data:
                 else:
                     sql1 += '\nselect '
                 sql1 += f"{templist[primaryKeyList[i] - 3].source_field_en} as {mainList[primaryKeyList[i] - 3].field_en}\n"
-            if templist[index - 3].is_primary_key != "是":
+            if templist[index - 3].is_primary_key not in ("是", 'Y'):
                 sql1 += (f",{templist[index - 3].source_field_en} as {mainList[index - 3].field_en} \n"
                          f"{templist[index - 3].table_name} \n")
             else:
@@ -159,7 +177,7 @@ for sheet in sheets_data:
                 else:
                     sql1 += 'select '
                 sql1 += f"{templist[primaryKeyList[i] - 3].source_field_en} as {mainList[primaryKeyList[i] - 3].field_en}\n"
-            if templist[index - 3].is_primary_key != "是":
+            if templist[index - 3].is_primary_key not in ("是", 'Y'):
                 sql1 += (f",{templist[index - 3].source_field_en} as {mainList[index - 3].field_en} \n"
                          f"{templist[index - 3].table_name} \n")
             else:
@@ -177,7 +195,7 @@ for sheet in sheets_data:
                 else:
                     sql1 += 'select '
                 sql1 += f"{templist[primaryKeyList[i] - 3].source_field_en} as {mainList[primaryKeyList[i] - 3].field_en}\n"
-            if templist[index - 3].is_primary_key != "是":
+            if templist[index - 3].is_primary_key not in ("是", 'Y'):
                 sql1 += (f",{templist[index - 3].source_field_en} as {mainList[index - 3].field_en} \n"
                          f"{templist[index - 3].table_name} \n")
             else:
@@ -247,16 +265,16 @@ for sheet in sheets_data:
     sql4 = "select \nsum("
     sql4_cnt = 0
     sql7 = "select \nsum("
-    sqlcp7 = "select \n0"
+    sqlcp7 = "select \n0 "
     sql7_cnt = 0
     for i, mb in enumerate(mainList):
         # sum(金额)
-        if 'DECIMAL' in mb.data_type:
+        if 'DECIMAL' in mb.data_type.upper():
             if sql4_cnt > 0:
                 sql4 += ',sum('
             sql4 += f"nvl({mb.field_en},0)) as {mb.field_en}  /* {mb.field_cn} */\n"
             sql4_cnt += 1
-        if mb.is_null == '否':
+        if mb.is_null in ('否', 'N'):
             if sql7_cnt > 0:
                 sql7 += ',sum('
                 sqlcp7 += ',0'
@@ -301,7 +319,7 @@ for sheet in sheets_data:
     sqlcp4_3 = ""
     for i, mb in enumerate(mainList):
         # sum(金额)
-        if 'DECIMAL' in mb.data_type:
+        if 'DECIMAL' in mb.data_type.upper():
             if sqlcp4_cnt == 0:
                 sqlcp4 = f"select sum("
                 sqlcp4 += f"{mb.field_en}) as {mb.field_en}  /* {mb.field_cn} */\n"
@@ -317,16 +335,18 @@ for sheet in sheets_data:
                     sqlcp4_1 += f",sum("
                     sqlcp4_1 += f"nvl({mapList_1[i].source_field_en},0)) as {mb.field_en}  /* {mb.field_cn} */\n"
             if len2 > 0:
-                if sqlcp4_cnt == 0 and (len1 > 0):
-                    sqlcp4_2 += f"union all\n"
+                if sqlcp4_cnt == 0 :
+                    if len1 > 0:
+                        sqlcp4_2 += f"union all\n"
                     sqlcp4_2 += f"select \nsum("
                     sqlcp4_2 += f"nvl({mapList_2[i].source_field_en},0)) as {mb.field_en}  /* {mb.field_cn} */\n"
                 else:
                     sqlcp4_2 += f",sum("
                     sqlcp4_2 += f"nvl({mapList_2[i].source_field_en},0)) as {mb.field_en}  /* {mb.field_cn} */\n"
             if len3 > 0:
-                if sqlcp4_cnt == 0 and (len1 > 0 or len2 > 0):
-                    sqlcp4_3 += f"union all\n"
+                if sqlcp4_cnt == 0 :
+                    if len1 > 0 or len2 > 0:
+                        sqlcp4_3 += f"union all\n"
                     sqlcp4_3 += f"select \nsum("
                     sqlcp4_3 += f"nvl({mapList_3[i].source_field_en},0)) as {mb.field_en}  /* {mb.field_cn} */\n"
                 else:
@@ -334,7 +354,7 @@ for sheet in sheets_data:
                     sqlcp4_3 += f"nvl({mapList_3[i].source_field_en},0)) as {mb.field_en}  /* {mb.field_cn} */\n"
             sqlcp4_cnt += 1
         if i == len(mainList) - 1:
-            if len1 + len2 + len3 > 1:
+            if len1 + len2 + len3 >= 1:
                 sqlcp4 += "from (\n"
                 if len1 > 0:
                     sqlcp4_1 += f"{mapList_1[0].table_name}\n"
@@ -343,7 +363,7 @@ for sheet in sheets_data:
                 if len3 > 0:
                     sqlcp4_3 += f"{mapList_3[0].table_name}\n"
             sqlcp4 += sqlcp4_1 + sqlcp4_2 + sqlcp4_3
-            if len1 + len2 + len3 > 1:
+            if len1 + len2 + len3 >= 1:
                 sqlcp4 += ")\n"
             if sqlcp4_cnt > 0:
                 df.loc[4, df.columns[col_num_ct_sql]] = sqlcp4
@@ -352,7 +372,7 @@ for sheet in sheets_data:
             df.loc[7, df.columns[col_num_ct_sql]] = sqlcp7
 
     df_all[sheet] = df
-    df_all2[sheet] = common.fz(df,ndf)
+    df_all2[sheet] = common.fz(df, ndf)
 # 删除之前是生成的文件，并重新生成文件
 common.del_file()
 # 将所有的sheet页合并成一个文件但每个sheet页写入到文件的不同工作表中
@@ -365,8 +385,3 @@ with pd.ExcelWriter(common.FILE_URL_OUT2, engine='xlsxwriter') as writer:
     for sheet_name, df_sheet in df_all2.items():
         df_sheet.to_excel(writer, sheet_name=sheet_name, index=False)
 print("生成文件成功：" + common.FILE_URL_OUT2)
-
-
-
-
-

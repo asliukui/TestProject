@@ -253,7 +253,7 @@ for sheet in sheets_data:
         if 'DECIMAL' in mb.data_type:
             if sql4_cnt > 0:
                 sql4 += ',sum('
-            sql4 += f"{mb.field_en}) as {mb.field_en}  /* {mb.field_cn} */\n"
+            sql4 += f"nvl({mb.field_en},0)) as {mb.field_en}  /* {mb.field_cn} */\n"
             sql4_cnt += 1
         if mb.is_null == '否':
             if sql7_cnt > 0:
@@ -311,26 +311,26 @@ for sheet in sheets_data:
             if len1 > 0:
                 if sqlcp4_cnt == 0:
                     sqlcp4_1 += f"select \nsum("
-                    sqlcp4_1 += f"{mapList_1[i].source_field_en}) as {mb.field_en}  /* {mb.field_cn} */\n"
+                    sqlcp4_1 += f"nvl({mapList_1[i].source_field_en},0)) as {mb.field_en}  /* {mb.field_cn} */\n"
                 else:
                     sqlcp4_1 += f",sum("
-                    sqlcp4_1 += f"{mapList_1[i].source_field_en}) as {mb.field_en}  /* {mb.field_cn} */\n"
+                    sqlcp4_1 += f"nvl({mapList_1[i].source_field_en},0)) as {mb.field_en}  /* {mb.field_cn} */\n"
             if len2 > 0:
                 if sqlcp4_cnt == 0 and (len1 > 0):
                     sqlcp4_2 += f"union all\n"
                     sqlcp4_2 += f"select \nsum("
-                    sqlcp4_2 += f"{mapList_2[i].source_field_en}) as {mb.field_en}  /* {mb.field_cn} */\n"
+                    sqlcp4_2 += f"nvl({mapList_2[i].source_field_en},0)) as {mb.field_en}  /* {mb.field_cn} */\n"
                 else:
                     sqlcp4_2 += f",sum("
-                    sqlcp4_2 += f"{mapList_2[i].source_field_en}) as {mb.field_en}  /* {mb.field_cn} */\n"
+                    sqlcp4_2 += f"nvl({mapList_2[i].source_field_en},0)) as {mb.field_en}  /* {mb.field_cn} */\n"
             if len3 > 0:
                 if sqlcp4_cnt == 0 and (len1 > 0 or len2 > 0):
                     sqlcp4_3 += f"union all\n"
                     sqlcp4_3 += f"select \nsum("
-                    sqlcp4_3 += f"{mapList_3[i].source_field_en}) as {mb.field_en}  /* {mb.field_cn} */\n"
+                    sqlcp4_3 += f"nvl({mapList_3[i].source_field_en},0)) as {mb.field_en}  /* {mb.field_cn} */\n"
                 else:
                     sqlcp4_3 += f",sum("
-                    sqlcp4_3 += f"{mapList_3[i].source_field_en}) as {mb.field_en}  /* {mb.field_cn} */\n"
+                    sqlcp4_3 += f"nvl({mapList_3[i].source_field_en},0)) as {mb.field_en}  /* {mb.field_cn} */\n"
             sqlcp4_cnt += 1
         if i == len(mainList) - 1:
             if len1 + len2 + len3 > 1:

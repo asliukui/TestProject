@@ -31,8 +31,8 @@ same_level_directory = os.path.dirname(script_path)
 # 设置输出文件名，如果存在先就删除，文件打开状态无法删除
 file_to_delete = "date_bk.xlsx"
 file_to_delete2 = "date_tar_bk.xlsx"
-FILE_URL_IN = os.path.join(same_level_directory, "xintou02.xlsx")
-# FILE_URL_IN = os.path.join(same_level_directory, "pls_迁出至新信投_mapping_0510.xlsx")
+# FILE_URL_IN = os.path.join(same_level_directory, "xintou_dev.xlsx")
+FILE_URL_IN = os.path.join(same_level_directory, "pls_迁出至新信投_mapping_0510_base.xlsx")
 FILE_URL_OUT = os.path.join(same_level_directory, file_to_delete)
 FILE_URL_OUT2 = os.path.join(same_level_directory, file_to_delete2)
 

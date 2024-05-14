@@ -213,7 +213,8 @@ for sheet in sheets_data:
         if (mainList[index - 3].value_constraint is not None) and len(mainList[index - 3].value_constraint) > 0:
             df.loc[index, df.columns[
                 col_num_code_field]] = f"验证：{mainList[index - 3].field_cn}({mainList[index - 3].field_en})码值在落标码值范围内"
-            result = [i.split('-')[0] for i in mainList[index - 3].value_constraint.split()]
+            # result = [i.split('-')[0] for i in mainList[index - 3].value_constraint.split()]
+            result = [x.split('-')[0] for x in mainList[index - 3].value_constraint.split('\n')]
             result = str(result).replace('[', "(")
             result = str(result).replace(']', ")")
             sql1 = f"select count(1) as tcount from {mainList[index - 3].table_name} where {mainList[index - 3].field_en} not in {result}"

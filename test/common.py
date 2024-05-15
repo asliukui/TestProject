@@ -33,7 +33,7 @@ same_level_directory = os.path.dirname(script_path)
 file_to_delete = "date_bk.xlsx"
 file_to_delete2 = "date_tar_bk.xlsx"
 # FILE_URL_IN = os.path.join(same_level_directory, "xintou_dev.xlsx")
-FILE_URL_IN = os.path.join(same_level_directory, "供应链系统中间表数据据映射20240514(迁入).xlsx")
+FILE_URL_IN = os.path.join(same_level_directory, "pls_迁出至新信投_mapping_0510_base.xlsx")
 FILE_URL_OUT = os.path.join(same_level_directory, file_to_delete)
 FILE_URL_OUT2 = os.path.join(same_level_directory, file_to_delete2)
 
@@ -321,7 +321,7 @@ def fz(sdf, tdf):
     init_row_nm=2
     sum_num = sdf[sdf.columns[col_num_hh_field]].notnull().sum()
 
-    if re.match(r'[a-zA-Z]', sdf.columns[0][1]):
+    if re.match(r'[a-zA-Z]', sdf.columns[1][0]):
         tab_en=str(sdf.columns[1])
         tab_en_cn =  str(sdf.columns[1]) + "-" + str(sdf.iloc[0, 1])
     else:

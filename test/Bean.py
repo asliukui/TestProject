@@ -1,9 +1,12 @@
 # 创建实体类，属性名和属性类型如下：
 # 源系统	源表英文名	源表中文名	源表字段英名	源表字段中文名	数据类型	码值说明	映射规则	SQL	业务牵头部门	业务对接人	备注, 12个属性,用python创建实体类,名称尽量简洁
+import re
+
+
 class MapBean:
     def __init__(self, source_system, source_table_en, source_table_cn, source_field_en, source_field_cn, data_type,
                  code_value, mapping_rule, sql, business_department, business_contact, remark, is_primary_key,
-                 table_flag,table_name):
+                 table_flag,table_name:str):
         self.source_system = str(source_system).replace('nan', '')
         self.source_table_en = str(source_table_en).replace('nan', '')
         self.source_table_cn = str(source_table_cn).replace('nan', '')
@@ -33,9 +36,8 @@ class MapBean:
         if self.source_field_en == '':
             self.source_field_en = 'Temp'+table_flag
         #  给表关联条件赋值，如果为空，就赋值为 table+table_flag
-
-        if 'from' in table_name.lower() or 'where' in table_name.lower():
-            if 'from' not in table_name.lower()[0:5]:
+        if table_name is not None and len(table_name) >0 and re.match(r'[a-zA-Z]', table_name.strip()):
+            if 'from' not in table_name.strip().lower()[0:5]:
                 self.table_name = 'from '+table_name
             else:
                 self.table_name = table_name

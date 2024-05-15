@@ -364,7 +364,7 @@ for sheet in sheets_data:
                     sqlcp4_3 += f"{mapList_3[0].table_name}\n"
             sqlcp4 += sqlcp4_1 + sqlcp4_2 + sqlcp4_3
             if len1 + len2 + len3 >= 1:
-                sqlcp4 += ")\n"
+                sqlcp4 += ") t\n"
             if sqlcp4_cnt > 0:
                 df.loc[4, df.columns[col_num_ct_sql]] = sqlcp4
             df.loc[5, df.columns[col_num_ct_sql]] = f"select count(1) as tcount from {mainList[0].table_name}"

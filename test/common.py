@@ -287,10 +287,10 @@ table_p = ['ACCOUNTDAY_INFO', 'ACCOUNT_INFO_TEMP', 'ADMINOPERATION_AUTHORIZATION
 
 
 def get_table_catch_sys(sys_flag, table_catch):
-    table_catch = table_catch.upper()
     if table_catch is None or table_catch == '':
         return table_catch
-    elif sys_flag == 'L':
+    table_catch = str(table_catch).upper()
+    if sys_flag == 'L':
         for table in table_l:
             table_catch = table_catch.replace(table, table + "_L")
         return table_catch

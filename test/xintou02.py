@@ -51,6 +51,7 @@ for sheet in sheets_data:
     ndf.loc[1] = common.test_file_des
 
     df = sheets_data[sheet]
+
     # sys.exit()
     # 总行数和总列数
     df_rows = df.shape[0]
@@ -69,27 +70,29 @@ for sheet in sheets_data:
     table_catch1 = ""
     table_catch2 = ""
     table_catch3 = ""
+    # 第一列不为空的行数
+    col0_count = (df.iloc[:, 0].notnull()).sum()
     if MAPPING_KEY:
         if not df.iloc[5:, 20].isnull().all():
             # 去除第16列的空值
-            table_catch1 = df.iloc[:, 20].dropna().iloc[-1]
+            # table_catch1 = df.iloc[:, 20].dropna().iloc[-1]
+            table_catch1=df.iloc[col0_count, 20] if col0_count < df_rows else None
         if not df.iloc[5:, 32].isnull().all():
-            table_catch2 = df.iloc[:, 32].dropna().iloc[-1]
+            table_catch2 = df.iloc[col0_count, 32] if col0_count < df_rows else None
         if not df.iloc[5:, 44].isnull().all():
-            table_catch3 = df.iloc[:, 44].dropna().iloc[-1]
+            table_catch3 = df.iloc[col0_count, 44] if col0_count < df_rows else None
     else:
         # 初始化sql关联字段，匹配对应系统标识 table_L
         if not df.iloc[5:, 14].isnull().all():
             # 去除第16列的空值
-            df_no_na = df.iloc[:, 16].dropna()
-            # 获取最后一个值,作为表关联，如果没有from 关键字，则赋值table+table_falg
-            table_catch1 = common.get_table_catch_sys(common.FLAG_SYS_1, df_no_na.iloc[-1])
+            # df_no_na = df.iloc[:, 16].dropna()
+            # 获取最后一个值,作为表关联，赋值table+table_falg
+            # lastname = df_no_na.iloc[-1]
+            table_catch1 = common.get_table_catch_sys(common.FLAG_SYS_1, df.iloc[col0_count,16] if col0_count < df_rows else None)
         if not df.iloc[5:, 26].isnull().all():
-            df_no_na = df.iloc[:, 28].dropna()
-            table_catch2 = common.get_table_catch_sys(common.FLAG_SYS_2, df_no_na.iloc[-1])
+            table_catch2 = common.get_table_catch_sys(common.FLAG_SYS_2, df.iloc[col0_count,28] if col0_count < df_rows else None)
         if not df.iloc[5:, 38].isnull().all():
-            df_no_na = df.iloc[:, 40].dropna()
-            table_catch3 = common.get_table_catch_sys(common.FLAG_SYS_3, df_no_na.iloc[-1])
+            table_catch3 = common.get_table_catch_sys(common.FLAG_SYS_3, df.iloc[col0_count,40] if col0_count < df_rows else None)
 
     # 初始化表英文名，因为源系统中英文位置会互换。。。
     if re.match(r'[a-zA-Z]', df.columns[1][0]):

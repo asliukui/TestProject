@@ -13,6 +13,8 @@ class MapBean:
         self.source_field_en = str(source_field_en).replace('nan', '')
         self.source_field_cn = str(source_field_cn).replace('nan', '')
         self.data_type = str(data_type).replace('nan', '')
+        if self.data_type is not None and len(self.data_type) > 0:
+            self.data_type = self.data_type.split('(')[0].upper()
         self.code_value = str(code_value).replace('nan', '')
         self.mapping_rule = str(mapping_rule).replace('nan', '')
         self.sql = str(sql)
@@ -63,6 +65,8 @@ class MainBean:
         self.field_en = str(field_en).replace('nan', '')
         self.field_cn = str(field_cn).replace('nan', '')
         self.data_type = str(data_type).replace('nan', '')
+        if self.data_type is not None and len(self.data_type) > 0:
+            self.data_type = self.data_type.split('(')[0].upper()
         self.is_primary_key = str(is_primary_key).replace('nan', '')
         self.is_null = str(is_null).replace('nan', '')
         self.business_explain = str(business_explain).replace('nan', '')

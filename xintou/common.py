@@ -2,6 +2,8 @@ import os
 import re
 import sys
 
+import pandas as pd
+
 PRIMARY_KEY = "是"
 # exlce中迁出的系统标识
 FLAG_SYS_L = "L"
@@ -38,13 +40,16 @@ same_level_directory = os.path.dirname(script_path)
 file_to_delete = "date_bk.xlsx"
 file_to_delete2 = "date_tar_bk.xlsx"
 # FILE_URL_IN = os.path.join(same_level_directory, "xintou_dev.xlsx")
-FILE_URL_IN = os.path.join(same_level_directory, "SCB_新一代新信投项目群_新信投系统中间表数据据映射mapping-V0.05 (20240525-pls迁出).xlsx")
+FILE_URL_IN = os.path.join(same_level_directory, "SCB_新一代新信投项目群_新信投系统中间表数据据映射mapping-V0.05.xlsx")
 FILE_URL_OUT = os.path.join(same_level_directory, file_to_delete)
 FILE_URL_OUT2 = os.path.join(same_level_directory, file_to_delete2)
 FILE_URL_OUT_L = os.path.join(same_level_directory, FILE_NAME_L)
 FILE_URL_OUT_P = os.path.join(same_level_directory, FILE_NAME_P)
 FILE_URL_OUT_S = os.path.join(same_level_directory, FILE_NAME_S)
 
+
+# 字段类型
+field_num_types = ['DECIMAL', 'INT']
 # 系统表名
 table_m = []
 table_s = ['ENT_BONDISSUE', 'ENT_IPO', 'AA', 'ACCOUNTING_CATALOG', 'ACCOUNTING_LIBRARY',
@@ -320,6 +325,17 @@ def init_pd_config(pd):
     return pd
 
 
+def mulu_list(df_all):
+    ml = ['表名', '用例条数']
+    first_df = pd.DataFrame(columns=ml)
+    for sheet_name, df_sheet in df_all.items():
+        new_df = pd.DataFrame({'表名': sheet_name, '用例条数': len(df_sheet)}, index=[0])
+        first_df = pd.concat([first_df, new_df], ignore_index=True)
+    new_df = pd.DataFrame({'表名': '合计', '用例条数': first_df['用例条数'].sum()}, index=[0])
+    first_df = pd.concat([first_df, new_df], ignore_index=True)
+    df_all['目录'] = first_df
+    return df_all
+
 # source_df,tar_df,返回tar_df
 def fz(sdf, tdf, sys_flag):
     # 循环从0开始，循环5次
@@ -337,10 +353,10 @@ def fz(sdf, tdf, sys_flag):
 
     if re.match(r'[a-zA-Z]', sdf.columns[1][0]):
         tab_en = str(sdf.columns[1])
-        tab_en_cn = str(sdf.columns[1]) + "-" + str(sdf.iloc[0, 1])
+        tab_en_cn = str(sdf.columns[1]) + "-" + str(sdf.iloc[0, 1])+ "_" +sys_flag
     else:
         tab_en = str(sdf.iloc[0, 1])
-        tab_en_cn = str(sdf.iloc[0, 1]) + "-" + str(sdf.columns[1])
+        tab_en_cn = str(sdf.iloc[0, 1]) + "-" + str(sdf.columns[1])+ "_" +sys_flag
     for i in range(5):
         # sdf.loc[i + 3, sdf.columns[col_num_code_sql]]
         for index, column in enumerate(tdf.columns):
@@ -358,11 +374,11 @@ def fz(sdf, tdf, sys_flag):
                 else:
                     tdf.loc[i + init_row_nm, column] = "汇总检查"
             elif index == 3:
-                tdf.loc[i + init_row_nm, column] = sys_flag + "数据库"
+                tdf.loc[i + init_row_nm, column] = sys_flag + "信贷库"
             elif index == 4:
                 tdf.loc[i + init_row_nm, column] = sdf.loc[i + 3, sdf.columns[col_num_hh_sql]]
             elif index == 5:
-                tdf.loc[i + init_row_nm, column] = sys_flag + "数据库"
+                tdf.loc[i + init_row_nm, column] = sys_flag + "信贷库"
             elif index == 6:
                 tdf.loc[i + init_row_nm, column] = sdf.loc[i + 3, sdf.columns[col_num_ct_sql]]
             elif index == 7:
@@ -395,11 +411,11 @@ def fz(sdf, tdf, sys_flag):
             elif index == 2:
                 tdf.loc[i + init_row_nm, column] = "明细检查"
             elif index == 3:
-                tdf.loc[i + init_row_nm, column] = sys_flag + "数据库"
+                tdf.loc[i + init_row_nm, column] = sys_flag + "信贷库"
             elif index == 4:
                 tdf.loc[i + init_row_nm, column] = sdf.loc[i + 3, sdf.columns[col_num_ver_sql]]
             elif index == 5:
-                tdf.loc[i + init_row_nm, column] = sys_flag + "数据库"
+                tdf.loc[i + init_row_nm, column] = sys_flag + "信贷库"
             elif index == 6:
                 if sys_flag== FLAG_SYS_L:
                     sum_table_name = L_SCHEMA + tab_en
@@ -442,11 +458,11 @@ def fz(sdf, tdf, sys_flag):
             elif index == 2:
                 tdf.loc[i + init_row_nm, column] = "数据落标检查"
             elif index == 3:
-                tdf.loc[i + init_row_nm, column] = sys_flag + "数据库"
+                tdf.loc[i + init_row_nm, column] = sys_flag + "信贷库"
             elif index == 4:
                 tdf.loc[i + init_row_nm, column] = sdf.loc[i + 3, sdf.columns[col_num_code_sql]]
             elif index == 5:
-                tdf.loc[i + init_row_nm, column] = sys_flag + "数据库"
+                tdf.loc[i + init_row_nm, column] = sys_flag + "信贷库"
             elif index == 6:
                 tdf.loc[i + init_row_nm, column] = "select 0 as tcount from dual"
             elif index == 7:

@@ -91,30 +91,30 @@ for sheet in sheets_data:
     table_catch2 = ""
     table_catch3 = ""
     # 第一列不为空的行数
-    col0_count = (df.iloc[:, 0].notnull()).sum()
+    col0_count = (df.iloc[:, 1].notnull()).sum()
     if MAPPING_KEY:
-        if not df.iloc[5:, 20].isnull().all():
+        if df.iloc[3:, 20].notnull().any():
             # 去除第16列的空值
             # table_catch1 = df.iloc[:, 20].dropna().iloc[-1]
             table_catch1 = df.iloc[col0_count, 20] if col0_count < df_rows else None
-        if not df.iloc[5:, 32].isnull().all():
+        if df.iloc[3:, 32].notnull().any():
             table_catch2 = df.iloc[col0_count, 32] if col0_count < df_rows else None
-        if not df.iloc[5:, 44].isnull().all():
+        if df.iloc[3:, 44].notnull().any():
             table_catch3 = df.iloc[col0_count, 44] if col0_count < df_rows else None
 
     else:
         # 初始化sql关联字段，匹配对应系统标识 table_L
-        if not df.iloc[5:, 14].isnull().all():
+        if df.iloc[3:, 14].notnull().any():
             # 去除第16列的空值
             # df_no_na = df.iloc[:, 16].dropna()
             # 获取最后一个值,作为表关联，赋值table+table_falg
             # lastname = df_no_na.iloc[-1]
             table_catch1 = df.iloc[col0_count, 16] if col0_count < df_rows else None
             table_catch1 = common.get_table_catch_sys(common.FLAG_SYS_L, table_catch1)
-        if not df.iloc[5:, 26].isnull().all():
+        if df.iloc[3:, 26].notnull().any():
             table_catch2 = df.iloc[col0_count, 28] if col0_count < df_rows else None
             # table_catch2 = common.get_table_catch_sys(common.FLAG_SYS_2, table_catch2)    #P为核心，不用加scheme
-        if not df.iloc[5:, 38].isnull().all():
+        if df.iloc[3:, 38].notnull().any():
             table_catch3 = df.iloc[col0_count, 40] if col0_count < df_rows else None
             table_catch3 = common.get_table_catch_sys(common.FLAG_SYS_S, table_catch3)
 
@@ -136,7 +136,7 @@ for sheet in sheets_data:
             primaryKeyList.append(index)
         # 初始化mapBean,根据'原表字段英文名'列判断，都为空则该系统映射，否则有字段映射
         # 用pandas判断16列第5行以后的值是否为都空，第一段系统
-        if not df.iloc[5:, 14].isnull().all():
+        if df.iloc[3:, 14].notnull().any():
             # 初始化Bean.MapBean,并存入mapList1。mapbean初始化的参数从13开始到24，df.iloc[index,13]
             mapList_1.append(
                 Bean.MapBean(df.iloc[index, 13], df.iloc[index, 14], df.iloc[index, 15],
@@ -144,7 +144,7 @@ for sheet in sheets_data:
                              df.iloc[index, 17], df.iloc[index, 18], df.iloc[index, 19], df.iloc[index, 20],
                              df.iloc[index, 21], df.iloc[index, 22], df.iloc[index, 23], df.iloc[index, 24],
                              df.iloc[index, 4], common.FLAG_SYS_L, table_catch1))
-        if not df.iloc[5:, 26].isnull().all():
+        if df.iloc[3:, 26].notnull().any():
             # 初始化Bean.MapBean,并存入mapList2。mapbean初始化的参数从25开始到36，df.iloc[index,25]
             mapList_2.append(
                 Bean.MapBean(df.iloc[index, 25], df.iloc[index, 26], df.iloc[index, 27],
@@ -152,7 +152,7 @@ for sheet in sheets_data:
                              df.iloc[index, 29], df.iloc[index, 30], df.iloc[index, 31], df.iloc[index, 32],
                              df.iloc[index, 33], df.iloc[index, 34], df.iloc[index, 35], df.iloc[index, 36],
                              df.iloc[index, 4], common.FLAG_SYS_P, table_catch2))
-        if not df.iloc[5:, 38].isnull().all():
+        if df.iloc[3:, 38].notnull().any():
             # 初始化Bean.MapBean,并存入mapList3。mapbean初始化的参数从37开始到48，df.iloc[index,37]
             mapList_3.append(
                 Bean.MapBean(df.iloc[index, 37], df.iloc[index, 38], df.iloc[index, 39],
@@ -165,13 +165,7 @@ for sheet in sheets_data:
     len1 = 1 if len(mapList_1) > 0 else 0
     len2 = 1 if len(mapList_2) > 0 else 0
     len3 = 1 if len(mapList_3) > 0 else 0
-    # 如果是空的关联关系，直接跳过
-    # if len1 > 0 and (table_catch1 is None or str(table_catch1) in ('NAN', 'nan', '')):
-    #     continue
-    # if len2 > 0 and (table_catch2 is None or str(table_catch2) in ('NAN', 'nan', '')):
-    #     continue
-    # if len3 > 0 and (table_catch3 is None or str(table_catch3) in ('NAN', 'nan', '')):
-    #     continue
+
     sys_schema = ""
     # '字段取值的正确性','正确性验证sql'
     for index, row in enumerate(df.iterrows()):
@@ -205,7 +199,10 @@ for sheet in sheets_data:
                     sql1 += 'and '
                 sql1 += f"t.{mainList[primaryKeyList[i] - 3].field_en} = t1.{mainList[primaryKeyList[i] - 3].field_en} \n"
             if mainList[index - 3].is_primary_key != common.PRIMARY_KEY:
-                sql1 += f"and nvl(t.{mainList[index - 3].field_en},'') = nvl(t1.{mainList[index - 3].field_en},'') \n"
+                if mainList[index - 3].data_type in common.field_num_types:
+                    sql1 += f"and nvl(t.{mainList[index - 3].field_en},-998998) = nvl(t1.{mainList[index - 3].field_en},-998998) \n"
+                else:
+                    sql1 += f"and nvl(t.{mainList[index - 3].field_en},' ') = nvl(t1.{mainList[index - 3].field_en},' ') \n"
 
             if mainList[index - 3].field_en != '':
                 df.loc[index, df.columns[
@@ -225,6 +222,9 @@ for sheet in sheets_data:
             result = [x.split('-')[0] for x in mainList[index - 3].value_constraint.split('\n')]
             result = str(result).replace('[', "(")
             result = str(result).replace(']', ")")
+            if '码值：' in result:
+                rs_index = result.find('码值：')
+                result="("+ result[rs_index + 6:]
             sql_v = f"select count(1) as tcount from {sys_schema}{mainList[index - 3].table_name} where {mainList[index - 3].field_en} not in {result}"
             df.loc[index, df.columns[col_num_code_sql]] = sql_v
 
@@ -233,7 +233,7 @@ for sheet in sheets_data:
     sql6 = f"select COUNT(1) as tcount from {sys_schema}{mainList[0].table_name} where "
     for i in range(len(primaryKeyList)):  # 系统1 主键拼接
         if i > 0:
-            sql5 += ','
+            sql5 += ' || '
             sql6 += ' or '
         sql5 += f"{mainList[primaryKeyList[i] - 3].field_en}"
         sql6 += f"nvl({mainList[primaryKeyList[i] - 3].field_en},'') = ''"
@@ -258,7 +258,10 @@ for sheet in sheets_data:
                 sql7 += ',sum('
                 sqlcp7 += ',0'
                 # ,sum(case when nvl(left_repay_principal,'') = '' then 1 else 0 end) as left_repay_principal
-            sql7 += f"case when nvl({mb.field_en},'')='' then 1 else 0 end ) as {mb.field_en}  /* {mb.field_cn} */\n"
+            if mb.data_type in common.field_num_types:
+                sql7 += f"case when nvl({mb.field_en},-998998)=-998998 then 1 else 0 end ) as {mb.field_en}  /* {mb.field_cn} */\n"
+            else:
+                sql7 += f"case when nvl({mb.field_en},' ')=' ' then 1 else 0 end ) as {mb.field_en}  /* {mb.field_cn} */\n"
             sqlcp7 += f" as {mb.field_en}  /* {mb.field_cn} */\n"
             sql7_cnt += 1
         if i == len(mainList) - 1:
@@ -281,7 +284,7 @@ for sheet in sheets_data:
     sqlcp3 = ''
     if len1 > 0:
         sum_list = mapList_1
-        sqlcp3 += f"select tcount as tcount {sum_list[0].table_name}  "
+        sqlcp3 += f"select count(1) as tcount {sum_list[0].table_name}  "
         df.loc[3, df.columns[col_num_ct_sql]] = sqlcp3
 
         # compare to 金额
@@ -304,7 +307,7 @@ for sheet in sheets_data:
                     df.loc[4, df.columns[col_num_ct_sql]] = sqlcp4
 
     # 过滤掉空的sheet
-    if len1 > 0 and table_catch1 is not None and str(table_catch1) not in ('NAN','nan') :
+    if len1 > 0 and table_catch1 is not None and str(table_catch1) not in ('NAN','nan') and len(table_catch1) > 0:
         df_all_L[sheet] = common.fz(df, l_df, common.FLAG_SYS_L)
 
     # PPPPPPPPPPPPPPP################################
@@ -339,7 +342,10 @@ for sheet in sheets_data:
                     sql1 += 'and '
                 sql1 += f"t.{mainList[primaryKeyList[i] - 3].field_en} = t1.{mainList[primaryKeyList[i] - 3].field_en} \n"
             if mainList[index - 3].is_primary_key != common.PRIMARY_KEY:
-                sql1 += f"and nvl(t.{mainList[index - 3].field_en},' ') = nvl(t1.{mainList[index - 3].field_en},' ') \n"
+                if mainList[index - 3].data_type in common.field_num_types :
+                    sql1 += f"and nvl(t.{mainList[index - 3].field_en},-998998) = nvl(t1.{mainList[index - 3].field_en},-998998) \n"
+                else:
+                    sql1 += f"and nvl(t.{mainList[index - 3].field_en},' ') = nvl(t1.{mainList[index - 3].field_en},' ') \n"
 
             if mainList[index - 3].field_en != '':
                 df.loc[index, df.columns[
@@ -358,6 +364,9 @@ for sheet in sheets_data:
             result = [x.split('-')[0] for x in mainList[index - 3].value_constraint.split('\n')]
             result = str(result).replace('[', "(")
             result = str(result).replace(']', ")")
+            if '码值：' in result:
+                rs_index = result.find('码值：')
+                result="("+ result[rs_index + 6:]
             sql_v = f"select count(1) as tcount from {mainList[index - 3].table_name} where {mainList[index - 3].field_en} not in {result}"
             df.loc[index, df.columns[col_num_code_sql]] = sql_v
 
@@ -366,7 +375,7 @@ for sheet in sheets_data:
     sql6 = f"select COUNT(1) as tcount from {mainList[0].table_name} where "
     for i in range(len(primaryKeyList)):  # 系统1 主键拼接
         if i > 0:
-            sql5 += ','
+            sql5 += ' || '
             sql6 += ' or '
         sql5 += f"{mainList[primaryKeyList[i] - 3].field_en}"
         sql6 += f"nvl({mainList[primaryKeyList[i] - 3].field_en},' ') = ' '"
@@ -391,7 +400,10 @@ for sheet in sheets_data:
                 sql7 += ',sum('
                 sqlcp7 += ',0'
                 # ,sum(case when nvl(left_repay_principal,'') = '' then 1 else 0 end) as left_repay_principal
-            sql7 += f"case when nvl({mb.field_en},'')='' then 1 else 0 end ) as {mb.field_en}  /* {mb.field_cn} */\n"
+            if mb.data_type in common.field_num_types:
+                sql7 += f"case when nvl({mb.field_en},-998998)=-998998 then 1 else 0 end ) as {mb.field_en}  /* {mb.field_cn} */\n"
+            else:
+                sql7 += f"case when nvl({mb.field_en},' ')=' ' then 1 else 0 end ) as {mb.field_en}  /* {mb.field_cn} */\n"
             sqlcp7 += f" as {mb.field_en}  /* {mb.field_cn} */\n"
             sql7_cnt += 1
         if i == len(mainList) - 1:
@@ -414,7 +426,7 @@ for sheet in sheets_data:
     sqlcp3 = ''
     if len2 > 0:
         sum_list = mapList_2
-        sqlcp3 += f"select tcount as tcount {sum_list[0].table_name}  "
+        sqlcp3 += f"select count(1) as tcount {sum_list[0].table_name}  "
         df.loc[3, df.columns[col_num_ct_sql]] = sqlcp3
 
         # compare to 金额
@@ -437,7 +449,7 @@ for sheet in sheets_data:
                     df.loc[4, df.columns[col_num_ct_sql]] = sqlcp4
 
     # 过滤掉空的sheet
-    if len2 > 0 and table_catch2 is not None and str(table_catch2) not in ('NAN','nan') :
+    if len2 > 0 and table_catch2 is not None and str(table_catch2) not in ('NAN','nan') and len(table_catch2) > 0:
         df_all_P[sheet] = common.fz(df, p_df, common.FLAG_SYS_P)
 
     ##########SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS
@@ -473,8 +485,10 @@ for sheet in sheets_data:
                     sql1 += 'and '
                 sql1 += f"t.{mainList[primaryKeyList[i] - 3].field_en} = t1.{mainList[primaryKeyList[i] - 3].field_en} \n"
             if mainList[index - 3].is_primary_key != common.PRIMARY_KEY:
-                sql1 += f"and nvl(t.{mainList[index - 3].field_en},'') = nvl(t1.{mainList[index - 3].field_en},'') \n"
-
+                if mainList[index - 3].data_type in common.field_num_types :
+                    sql1 += f"and nvl(t.{mainList[index - 3].field_en},-998998) = nvl(t1.{mainList[index - 3].field_en},-998998) \n"
+                else:
+                    sql1 += f"and nvl(t.{mainList[index - 3].field_en},' ') = nvl(t1.{mainList[index - 3].field_en},' ') \n"
             if mainList[index - 3].field_en != '':
                 df.loc[index, df.columns[
                     col_num_ver_field]] = f"验证：{mainList[index - 3].field_cn}({mainList[index - 3].field_en})取值的正确性"
@@ -492,6 +506,9 @@ for sheet in sheets_data:
             result = [x.split('-')[0] for x in mainList[index - 3].value_constraint.split('\n')]
             result = str(result).replace('[', "(")
             result = str(result).replace(']', ")")
+            if '码值：' in result:
+                rs_index = result.find('码值：')
+                result="("+ result[rs_index + 6:]
             sql_v = f"select count(1) as tcount from {sys_schema}{mainList[index - 3].table_name} where {mainList[index - 3].field_en} not in {result}"
             df.loc[index, df.columns[col_num_code_sql]] = sql_v
 
@@ -500,7 +517,7 @@ for sheet in sheets_data:
     sql6 = f"select COUNT(1) as tcount from {sys_schema}{mainList[0].table_name} where "
     for i in range(len(primaryKeyList)):  # 系统1 主键拼接
         if i > 0:
-            sql5 += ','
+            sql5 += ' || '
             sql6 += ' or '
         sql5 += f"{mainList[primaryKeyList[i] - 3].field_en}"
         sql6 += f"nvl({mainList[primaryKeyList[i] - 3].field_en},'') = ''"
@@ -525,7 +542,10 @@ for sheet in sheets_data:
                 sql7 += ',sum('
                 sqlcp7 += ',0'
                 # ,sum(case when nvl(left_repay_principal,'') = '' then 1 else 0 end) as left_repay_principal
-            sql7 += f"case when nvl({mb.field_en},'')='' then 1 else 0 end ) as {mb.field_en}  /* {mb.field_cn} */\n"
+            if mb.data_type in common.field_num_types:
+                sql7 += f"case when nvl({mb.field_en},-998998)=-998998 then 1 else 0 end ) as {mb.field_en}  /* {mb.field_cn} */\n"
+            else:
+                sql7 += f"case when nvl({mb.field_en},' ')=' ' then 1 else 0 end ) as {mb.field_en}  /* {mb.field_cn} */\n"
             sqlcp7 += f" as {mb.field_en}  /* {mb.field_cn} */\n"
             sql7_cnt += 1
         if i == len(mainList) - 1:
@@ -548,7 +568,7 @@ for sheet in sheets_data:
     sqlcp3 = ''
     if len3 > 0:
         sum_list = mapList_3
-        sqlcp3 += f"select tcount as tcount {sum_list[0].table_name}  "
+        sqlcp3 += f"select count(1) as tcount {sum_list[0].table_name}  "
         df.loc[3, df.columns[col_num_ct_sql]] = sqlcp3
 
         # compare to 金额
@@ -571,7 +591,7 @@ for sheet in sheets_data:
                     df.loc[4, df.columns[col_num_ct_sql]] = sqlcp4
 
     # 过滤掉空的sheet
-    if len3 > 0 and table_catch3 is not None and str(table_catch3) not in ('NAN','nan') :
+    if len3 > 0 and table_catch3 is not None and str(table_catch3) not in ('NAN','nan') and len(table_catch3) > 0:
         df_all_S[sheet] = common.fz(df, s_df, common.FLAG_SYS_S)
 
 # 删除之前是生成的文件，并重新生成文件
@@ -583,7 +603,9 @@ common.del_file()
 #     for sheet_name, df_sheet in df_all.items():
 #         df_sheet.to_excel(writer, sheet_name=sheet_name, index=False)
 # print("生成文件成功：" + common.FILE_URL_OUT)
-
+df_all_L= common.mulu_list(df_all_L)
+df_all_P= common.mulu_list(df_all_P)
+df_all_S= common.mulu_list(df_all_S)
 with pd.ExcelWriter(common.FILE_URL_OUT_L, engine='xlsxwriter') as writer:
     for sheet_name, df_sheet in df_all_L.items():
         df_sheet.to_excel(writer, sheet_name=sheet_name, index=False)

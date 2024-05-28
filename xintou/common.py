@@ -50,6 +50,8 @@ FILE_URL_OUT_S = os.path.join(same_level_directory, FILE_NAME_S)
 
 # 字段类型
 field_num_types = ['DECIMAL', 'INT']
+#是否必输，源系统可能反，要随时根据上游版本改动
+field_not_null_flag =['是', 'Y']
 # 系统表名
 table_m = []
 table_s = ['ENT_BONDISSUE', 'ENT_IPO', 'AA', 'ACCOUNTING_CATALOG', 'ACCOUNTING_LIBRARY',

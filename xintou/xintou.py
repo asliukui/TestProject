@@ -253,7 +253,7 @@ for sheet in sheets_data:
                 sql4 += ',sum('
             sql4 += f"nvl({mb.field_en},0)) as {mb.field_en}  /* {mb.field_cn} */\n"
             sql4_cnt += 1
-        if mb.is_null in ('否', 'N'):
+        if mb.is_null in common.field_not_null_flag:
             if sql7_cnt > 0:
                 sql7 += ',sum('
                 sqlcp7 += ',0'
@@ -395,7 +395,7 @@ for sheet in sheets_data:
                 sql4 += ',sum('
             sql4 += f"nvl({mb.field_en},0)) as {mb.field_en}  /* {mb.field_cn} */\n"
             sql4_cnt += 1
-        if mb.is_null in ('否', 'N'):
+        if mb.is_null in common.field_not_null_flag:
             if sql7_cnt > 0:
                 sql7 += ',sum('
                 sqlcp7 += ',0'
@@ -537,7 +537,7 @@ for sheet in sheets_data:
                 sql4 += ',sum('
             sql4 += f"nvl({mb.field_en},0)) as {mb.field_en}  /* {mb.field_cn} */\n"
             sql4_cnt += 1
-        if mb.is_null in ('否', 'N'):
+        if mb.is_null in common.field_not_null_flag:
             if sql7_cnt > 0:
                 sql7 += ',sum('
                 sqlcp7 += ',0'

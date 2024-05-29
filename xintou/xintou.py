@@ -237,7 +237,7 @@ for sheet in sheets_data:
             sql6 += ' or '
         sql5 += f"{mainList[primaryKeyList[i] - 3].field_en}"
         sql6 += f"nvl({mainList[primaryKeyList[i] - 3].field_en},'') = ''"
-    sql5 += f") as tcount from {mainList[index - 3].table_name}"
+    sql5 += f") as tcount from {sys_schema}{mainList[index - 3].table_name}"
     df.loc[3, df.columns[col_num_hh_field]] = "验证：迁出表与中间表迁移数据总数的一致性"
     df.loc[3, df.columns[col_num_hh_sql]] = f"select count(1) as tcount from {sys_schema}{mainList[0].table_name}"
     # 遍历mainList
@@ -266,9 +266,9 @@ for sheet in sheets_data:
             sql7_cnt += 1
         if i == len(mainList) - 1:
             sql7 += f"from {sys_schema}{mainList[0].table_name}"
-            sqlcp7 += f"from dual"
+            sqlcp7 += f"from \"SYSIBM\".DUAL"
         df.loc[5, df.columns[col_num_ct_sql]] = f"select count(1) as tcount from {sys_schema}{mainList[0].table_name}"
-        df.loc[6, df.columns[col_num_ct_sql]] = f"select 0 as tcount from dual"
+        df.loc[6, df.columns[col_num_ct_sql]] = f"select 0 as tcount from \"SYSIBM\".DUAL"
         df.loc[7, df.columns[col_num_ct_sql]] = sqlcp7
     # 如果有金额字段，则输出sql
     if sql4_cnt > 0:
@@ -550,9 +550,9 @@ for sheet in sheets_data:
             sql7_cnt += 1
         if i == len(mainList) - 1:
             sql7 += f"from {sys_schema}{mainList[0].table_name}"
-            sqlcp7 += f"from dual"
+            sqlcp7 += f"from \"SYSIBM\".DUAL"
         df.loc[5, df.columns[col_num_ct_sql]] = f"select count(1) as tcount from {sys_schema}{mainList[0].table_name}"
-        df.loc[6, df.columns[col_num_ct_sql]] = f"select 0 as tcount from dual"
+        df.loc[6, df.columns[col_num_ct_sql]] = f"select 0 as tcount from \"SYSIBM\".DUAL"
         df.loc[7, df.columns[col_num_ct_sql]] = sqlcp7
     # 如果有金额字段，则输出sql
     if sql4_cnt > 0:

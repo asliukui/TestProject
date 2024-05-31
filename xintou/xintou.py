@@ -38,7 +38,7 @@ sheets_data = {}
 # 创建容器，存储每个 sheet 的属性。
 # 遍历每个 sheet,并存入字典中
 for sheet_name in df_all.keys():
-    if sheet_name in ('目录','修订记录','目录 -数据分析','数据对像') or "Sheet" in sheet_name:
+    if sheet_name in ('目录', '修订记录', '目录 -数据分析', '数据对像') or "Sheet" in sheet_name:
         continue
     df = df_all[sheet_name]
     sheets_data[sheet_name] = df
@@ -184,10 +184,16 @@ for sheet in sheets_data:
                 else:
                     sql1 += '\nselect '
                 sql1 += f"{templist[primaryKeyList[i] - 3].source_field_en} as {mainList[primaryKeyList[i] - 3].field_en}\n"
-            # 避免重复拼接主键，在此判断，如果是主键为对比字段，走else,直接拼接from table
+            # 避免重复拼接主键，在此判断，如果是主键为对比字段，走else,直接拼接from table,否则 非主键字段 进IF 拼接
             if templist[index - 3].is_primary_key not in ("是", 'Y'):
-                sql1 += (f",{templist[index - 3].source_field_en} as {mainList[index - 3].field_en} \n"
-                         f"{templist[index - 3].table_name} \n")
+                # 检查是否需要码值转换，如果‘码值说明’列有值，则拼接code_zd()函数
+                if templist[index - 3].code_value is not None and len(str(templist[index - 3].code_value)) > 1:
+                    sql1 += (
+                        f",{sys_schema}code_zd('{templist[index - 3].code_value}',{templist[index - 3].source_field_en}) as {mainList[index - 3].field_en} \n"
+                        f"{templist[index - 3].table_name} \n")
+                else:
+                    sql1 += (f",{templist[index - 3].source_field_en} as {mainList[index - 3].field_en} \n"
+                             f"{templist[index - 3].table_name} \n")
             else:
                 sql1 += (f"{templist[index - 3].table_name} \n")
             if templist[index - 3].source_field_en == "Temp" + templist[index - 3].table_flag:
@@ -222,9 +228,11 @@ for sheet in sheets_data:
             result = [x.split('-')[0] for x in mainList[index - 3].value_constraint.split('\n')]
             result = str(result).replace('[', "(")
             result = str(result).replace(']', ")")
+            if mainList[index - 3].is_null in common.field_is_null_flag:
+                result = str(result).replace(')', ',NULL )')
             if '码值：' in result:
                 rs_index = result.find('码值：')
-                result="("+ result[rs_index + 6:]
+                result = "(" + result[rs_index + 6:]
             sql_v = f"select count(1) as tcount from {sys_schema}{mainList[index - 3].table_name} where {mainList[index - 3].field_en} not in {result}"
             df.loc[index, df.columns[col_num_code_sql]] = sql_v
 
@@ -307,7 +315,7 @@ for sheet in sheets_data:
                     df.loc[4, df.columns[col_num_ct_sql]] = sqlcp4
 
     # 过滤掉空的sheet
-    if len1 > 0 and table_catch1 is not None and str(table_catch1) not in ('NAN','nan') and len(table_catch1) > 0:
+    if len1 > 0 and table_catch1 is not None and str(table_catch1) not in ('NAN', 'nan') and len(table_catch1) > 0:
         df_all_L[sheet] = common.fz(df, l_df, common.FLAG_SYS_L)
 
     # PPPPPPPPPPPPPPP################################
@@ -329,8 +337,14 @@ for sheet in sheets_data:
                 sql1 += f"{templist[primaryKeyList[i] - 3].source_field_en} as {mainList[primaryKeyList[i] - 3].field_en}\n"
             # 避免重复拼接主键，在此判断，如果是主键为对比字段，走else,直接拼接from table
             if templist[index - 3].is_primary_key not in ("是", 'Y'):
-                sql1 += (f",{templist[index - 3].source_field_en} as {mainList[index - 3].field_en} \n"
-                         f"{templist[index - 3].table_name} \n")
+                # 检查是否需要码值转换，如果‘码值说明’列有值，则拼接code_zd()函数
+                if templist[index - 3].code_value is not None and len(str(templist[index - 3].code_value)) > 1:
+                    sql1 += (
+                        f",code_zd('{templist[index - 3].code_value}',{templist[index - 3].source_field_en}) as {mainList[index - 3].field_en} \n"
+                        f"{templist[index - 3].table_name} \n")
+                else:
+                    sql1 += (f",{templist[index - 3].source_field_en} as {mainList[index - 3].field_en} \n"
+                             f"{templist[index - 3].table_name} \n")
             else:
                 sql1 += (f"{templist[index - 3].table_name} \n")
             if templist[index - 3].source_field_en == "Temp" + templist[index - 3].table_flag:
@@ -342,7 +356,7 @@ for sheet in sheets_data:
                     sql1 += 'and '
                 sql1 += f"t.{mainList[primaryKeyList[i] - 3].field_en} = t1.{mainList[primaryKeyList[i] - 3].field_en} \n"
             if mainList[index - 3].is_primary_key != common.PRIMARY_KEY:
-                if mainList[index - 3].data_type in common.field_num_types :
+                if mainList[index - 3].data_type in common.field_num_types:
                     sql1 += f"and nvl(t.{mainList[index - 3].field_en},-998998) = nvl(t1.{mainList[index - 3].field_en},-998998) \n"
                 else:
                     sql1 += f"and nvl(t.{mainList[index - 3].field_en},' ') = nvl(t1.{mainList[index - 3].field_en},' ') \n"
@@ -364,9 +378,11 @@ for sheet in sheets_data:
             result = [x.split('-')[0] for x in mainList[index - 3].value_constraint.split('\n')]
             result = str(result).replace('[', "(")
             result = str(result).replace(']', ")")
+            if mainList[index - 3].is_null in common.field_is_null_flag:
+                result = str(result).replace(')', ',NULL )')
             if '码值：' in result:
                 rs_index = result.find('码值：')
-                result="("+ result[rs_index + 6:]
+                result = "(" + result[rs_index + 6:]
             sql_v = f"select count(1) as tcount from {mainList[index - 3].table_name} where {mainList[index - 3].field_en} not in {result}"
             df.loc[index, df.columns[col_num_code_sql]] = sql_v
 
@@ -449,7 +465,7 @@ for sheet in sheets_data:
                     df.loc[4, df.columns[col_num_ct_sql]] = sqlcp4
 
     # 过滤掉空的sheet
-    if len2 > 0 and table_catch2 is not None and str(table_catch2) not in ('NAN','nan') and len(table_catch2) > 0:
+    if len2 > 0 and table_catch2 is not None and str(table_catch2) not in ('NAN', 'nan') and len(table_catch2) > 0:
         df_all_P[sheet] = common.fz(df, p_df, common.FLAG_SYS_P)
 
     ##########SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS
@@ -485,7 +501,7 @@ for sheet in sheets_data:
                     sql1 += 'and '
                 sql1 += f"t.{mainList[primaryKeyList[i] - 3].field_en} = t1.{mainList[primaryKeyList[i] - 3].field_en} \n"
             if mainList[index - 3].is_primary_key != common.PRIMARY_KEY:
-                if mainList[index - 3].data_type in common.field_num_types :
+                if mainList[index - 3].data_type in common.field_num_types:
                     sql1 += f"and nvl(t.{mainList[index - 3].field_en},-998998) = nvl(t1.{mainList[index - 3].field_en},-998998) \n"
                 else:
                     sql1 += f"and nvl(t.{mainList[index - 3].field_en},' ') = nvl(t1.{mainList[index - 3].field_en},' ') \n"
@@ -506,9 +522,11 @@ for sheet in sheets_data:
             result = [x.split('-')[0] for x in mainList[index - 3].value_constraint.split('\n')]
             result = str(result).replace('[', "(")
             result = str(result).replace(']', ")")
+            if mainList[index - 3].is_null in common.field_is_null_flag:
+                result = str(result).replace(')', ',NULL )')
             if '码值：' in result:
                 rs_index = result.find('码值：')
-                result="("+ result[rs_index + 6:]
+                result = "(" + result[rs_index + 6:]
             sql_v = f"select count(1) as tcount from {sys_schema}{mainList[index - 3].table_name} where {mainList[index - 3].field_en} not in {result}"
             df.loc[index, df.columns[col_num_code_sql]] = sql_v
 
@@ -591,7 +609,7 @@ for sheet in sheets_data:
                     df.loc[4, df.columns[col_num_ct_sql]] = sqlcp4
 
     # 过滤掉空的sheet
-    if len3 > 0 and table_catch3 is not None and str(table_catch3) not in ('NAN','nan') and len(table_catch3) > 0:
+    if len3 > 0 and table_catch3 is not None and str(table_catch3) not in ('NAN', 'nan') and len(table_catch3) > 0:
         df_all_S[sheet] = common.fz(df, s_df, common.FLAG_SYS_S)
 
 # 删除之前是生成的文件，并重新生成文件
@@ -603,9 +621,9 @@ common.del_file()
 #     for sheet_name, df_sheet in df_all.items():
 #         df_sheet.to_excel(writer, sheet_name=sheet_name, index=False)
 # print("生成文件成功：" + common.FILE_URL_OUT)
-df_all_L= common.mulu_list(df_all_L)
-df_all_P= common.mulu_list(df_all_P)
-df_all_S= common.mulu_list(df_all_S)
+df_all_L = common.mulu_list(df_all_L)
+df_all_P = common.mulu_list(df_all_P)
+df_all_S = common.mulu_list(df_all_S)
 with pd.ExcelWriter(common.FILE_URL_OUT_L, engine='xlsxwriter') as writer:
     for sheet_name, df_sheet in df_all_L.items():
         df_sheet.to_excel(writer, sheet_name=sheet_name, index=False)

@@ -51,7 +51,8 @@ FILE_URL_OUT_S = os.path.join(same_level_directory, FILE_NAME_S)
 # 字段类型
 field_num_types = ['DECIMAL', 'INT']
 #是否必输，源系统可能反，要随时根据上游版本改动
-field_not_null_flag =['是', 'Y']
+field_not_null_flag =['否', 'N']
+field_is_null_flag =['是', 'Y']
 # 系统表名
 table_m = []
 table_s = ['ENT_BONDISSUE', 'ENT_IPO', 'AA', 'ACCOUNTING_CATALOG', 'ACCOUNTING_LIBRARY',
@@ -466,7 +467,14 @@ def fz(sdf, tdf, sys_flag):
             elif index == 5:
                 tdf.loc[i + init_row_nm, column] = sys_flag + "信贷库"
             elif index == 6:
-                tdf.loc[i + init_row_nm, column] = "select 0 as tcount from dual"
+                if sys_flag== FLAG_SYS_L:
+                    tdf.loc[i + init_row_nm, column] = "select 0 as tcount from \"SYSIBM\".DUAL"
+                elif sys_flag == FLAG_SYS_S:
+                    tdf.loc[i + init_row_nm, column] = "select 0 as tcount from \"SYSIBM\".DUAL"
+                elif sys_flag == FLAG_SYS_P:
+                    tdf.loc[i + init_row_nm, column] = "select 0 as tcount from DUAL"
+                else :
+                    tdf.loc[i + init_row_nm, column] = "select 0 as tcount from DUAL"
             elif index == 7:
                 tdf.loc[i + init_row_nm, column] = "结果集"
             elif index == 8:

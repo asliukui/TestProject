@@ -32,6 +32,7 @@ test_file_clos = ['案例名称', '案例描述', '案例标签', '数据源1', 
 FILE_NAME_L = "date_bk_l.xlsx"
 FILE_NAME_P = "date_bk_p.xlsx"
 FILE_NAME_S = "date_bk_s.xlsx"
+
 # 获取当前脚本的路径
 script_path = os.path.abspath(__file__)
 # 获取同级目录
@@ -40,19 +41,26 @@ same_level_directory = os.path.dirname(script_path)
 file_to_delete = "date_bk.xlsx"
 file_to_delete2 = "date_tar_bk.xlsx"
 # FILE_URL_IN = os.path.join(same_level_directory, "xintou_dev.xlsx")
-FILE_URL_IN = os.path.join(same_level_directory, "SCB_新一代新信投项目群_新信投系统中间表数据据映射mapping-V0.05.xlsx")
+# FILE_URL_IN = os.path.join(same_level_directory, "SCB_新一代新信投项目群_新信投系统中间表数据据映射mapping-V0.05.xlsx")
+FILE_URL_IN = os.path.join(same_level_directory, "SCB_新一代新信投项目群_新信投系统中间表数据据映射mapping-V0.08-汇总版20240614.xlsx")
 FILE_URL_OUT = os.path.join(same_level_directory, file_to_delete)
 FILE_URL_OUT2 = os.path.join(same_level_directory, file_to_delete2)
+
+FILE_NAME_MERGE_L = "date_bk_merge_l.xlsx"
+FILE_NAME_MERGE_P = "date_bk_merge_p.xlsx"
+FILE_NAME_MERGE_S = "date_bk_merge_s.xlsx"
 FILE_URL_OUT_L = os.path.join(same_level_directory, FILE_NAME_L)
 FILE_URL_OUT_P = os.path.join(same_level_directory, FILE_NAME_P)
 FILE_URL_OUT_S = os.path.join(same_level_directory, FILE_NAME_S)
-
+FILE_URL_OUT_MERGE_L = os.path.join(same_level_directory, FILE_NAME_MERGE_L)
+FILE_URL_OUT_MERGE_P = os.path.join(same_level_directory, FILE_NAME_MERGE_P)
+FILE_URL_OUT_MERGE_S = os.path.join(same_level_directory, FILE_NAME_MERGE_S)
 
 # 字段类型
 field_num_types = ['DECIMAL', 'INT']
-#是否必输，源系统可能反，要随时根据上游版本改动
-field_not_null_flag =['否', 'N']
-field_is_null_flag =['是', 'Y']
+# 是否必输，源系统可能反，要随时根据上游版本改动
+field_not_null_flag = ['否', 'N']
+field_is_null_flag = ['是', 'Y']
 # 系统表名
 table_m = []
 table_s = ['ENT_BONDISSUE', 'ENT_IPO', 'AA', 'ACCOUNTING_CATALOG', 'ACCOUNTING_LIBRARY',
@@ -280,23 +288,16 @@ def get_sys_args():
         print("没有传递参数")
 
 
-def del_file():
-    if os.path.exists(FILE_URL_OUT):
-        print("文件：", file_to_delete, " 要在关闭状态才能删除重建哦！！")
-        # 如果文件存在，则删除它
-        os.remove(FILE_URL_OUT)
-        print(f"文件 {FILE_URL_OUT} 已删除。")
-    else:
-        print(f"文件 {FILE_URL_OUT} 不存在。")
-    if os.path.exists(FILE_URL_OUT_L):
-        # 如果文件存在，则删除它
-        os.remove(FILE_URL_OUT_L)
-    if os.path.exists(FILE_URL_OUT_P):
-        # 如果文件存在，则删除它
-        os.remove(FILE_URL_OUT_P)
-    if os.path.exists(FILE_URL_OUT_S):
-        # 如果文件存在，则删除它
-        os.remove(FILE_URL_OUT_S)
+# 创建一个函数，参数可以是任意多个文件路径，根据传入文件路径，删除文件
+def del_file(*file_path):
+    for file in file_path:
+        if os.path.exists(file):
+            print("文件：", file, " 要在关闭状态才能删除重建哦！！")
+            # 如果文件存在，则删除它
+            os.remove(file)
+            print(f"文件 {file} 已删除。")
+        else:
+            print(f"文件 {file} 不存在。")
 
 
 def get_table_catch_sys(sys_flag, table_catch):
@@ -313,7 +314,7 @@ def get_table_catch_sys(sys_flag, table_catch):
         return table_catch
     elif sys_flag == FLAG_SYS_P:
         for table in table_p:
-            table_catch = table_catch.replace(table, P_SCHEMA+table)
+            table_catch = table_catch.replace(table, P_SCHEMA + table)
         return table_catch
     else:
         return "系统标识错误"
@@ -339,6 +340,19 @@ def mulu_list(df_all):
     df_all['目录'] = first_df
     return df_all
 
+
+def concat_df(df_all):
+    # df_all是字典，key是表名，value是dataframe
+    merged_df = pd.DataFrame()
+    for sheet_name in df_all.keys():
+        if sheet_name in ('目录') or "Sheet" in sheet_name:
+            continue
+        # df = df_all[sheet_name]
+        merged_df = pd.concat([merged_df,df_all[sheet_name]])
+
+    return merged_df
+
+
 # source_df,tar_df,返回tar_df
 def fz(sdf, tdf, sys_flag):
     # 循环从0开始，循环5次
@@ -356,10 +370,10 @@ def fz(sdf, tdf, sys_flag):
 
     if re.match(r'[a-zA-Z]', sdf.columns[1][0]):
         tab_en = str(sdf.columns[1])
-        tab_en_cn = str(sdf.columns[1]) + "-" + str(sdf.iloc[0, 1])+ "_" +sys_flag
+        tab_en_cn = str(sdf.columns[1]) + "-" + str(sdf.iloc[0, 1]) + "_2" + sys_flag
     else:
         tab_en = str(sdf.iloc[0, 1])
-        tab_en_cn = str(sdf.iloc[0, 1]) + "-" + str(sdf.columns[1])+ "_" +sys_flag
+        tab_en_cn = str(sdf.iloc[0, 1]) + "-" + str(sdf.columns[1]) + "_2" + sys_flag
     for i in range(5):
         # sdf.loc[i + 3, sdf.columns[col_num_code_sql]]
         for index, column in enumerate(tdf.columns):
@@ -420,13 +434,13 @@ def fz(sdf, tdf, sys_flag):
             elif index == 5:
                 tdf.loc[i + init_row_nm, column] = sys_flag + "信贷库"
             elif index == 6:
-                if sys_flag== FLAG_SYS_L:
+                if sys_flag == FLAG_SYS_L:
                     sum_table_name = L_SCHEMA + tab_en
                 elif sys_flag == FLAG_SYS_S:
                     sum_table_name = S_SCHEMA + tab_en
                 elif sys_flag == FLAG_SYS_P:
                     sum_table_name = P_SCHEMA + tab_en
-                else :
+                else:
                     sum_table_name = tab_en
                 tdf.loc[i + init_row_nm, column] = f"select count(1) as tcount from {sum_table_name}"
             elif index == 7:
@@ -467,13 +481,13 @@ def fz(sdf, tdf, sys_flag):
             elif index == 5:
                 tdf.loc[i + init_row_nm, column] = sys_flag + "信贷库"
             elif index == 6:
-                if sys_flag== FLAG_SYS_L:
+                if sys_flag == FLAG_SYS_L:
                     tdf.loc[i + init_row_nm, column] = "select 0 as tcount from \"SYSIBM\".DUAL"
                 elif sys_flag == FLAG_SYS_S:
                     tdf.loc[i + init_row_nm, column] = "select 0 as tcount from \"SYSIBM\".DUAL"
                 elif sys_flag == FLAG_SYS_P:
                     tdf.loc[i + init_row_nm, column] = "select 0 as tcount from DUAL"
-                else :
+                else:
                     tdf.loc[i + init_row_nm, column] = "select 0 as tcount from DUAL"
             elif index == 7:
                 tdf.loc[i + init_row_nm, column] = "结果集"

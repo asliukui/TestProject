@@ -52,9 +52,6 @@ for sheet in sheets_data:
     l_df = pd.DataFrame(columns=common.test_file_clos)
     p_df = pd.DataFrame(columns=common.test_file_clos)
     s_df = pd.DataFrame(columns=common.test_file_clos)
-    # l_df.loc[1] = common.test_file_des
-    # p_df.loc[1] = common.test_file_des
-    # s_df.loc[1] = common.test_file_des
 
     df = sheets_data[sheet]
     # 生成新列名‘字段取值的正确性’
@@ -488,8 +485,14 @@ for sheet in sheets_data:
                 sql1 += f"{templist[primaryKeyList[i] - 3].source_field_en} as {mainList[primaryKeyList[i] - 3].field_en}\n"
             # 避免重复拼接主键，在此判断，如果是主键为对比字段，走else,直接拼接from table
             if templist[index - 3].is_primary_key not in ("是", 'Y'):
-                sql1 += (f",{templist[index - 3].source_field_en} as {mainList[index - 3].field_en} \n"
-                         f"{templist[index - 3].table_name} \n")
+                # 检查是否需要码值转换，如果‘码值说明’列有值，则拼接code_zd()函数
+                if templist[index - 3].code_value is not None and len(str(templist[index - 3].code_value)) > 1:
+                    sql1 += (
+                        f",{sys_schema}code_zd('{templist[index - 3].code_value}',{templist[index - 3].source_field_en}) as {mainList[index - 3].field_en} \n"
+                        f"{templist[index - 3].table_name} \n")
+                else:
+                    sql1 += (f",{templist[index - 3].source_field_en} as {mainList[index - 3].field_en} \n"
+                             f"{templist[index - 3].table_name} \n")
             else:
                 sql1 += (f"{templist[index - 3].table_name} \n")
             if templist[index - 3].source_field_en == "Temp" + templist[index - 3].table_flag:
@@ -613,24 +616,43 @@ for sheet in sheets_data:
         df_all_S[sheet] = common.fz(df, s_df, common.FLAG_SYS_S)
 
 # 删除之前是生成的文件，并重新生成文件
-common.del_file()
-# 三合一输出文档
-# 将所有的sheet页合并成一个文件但每个sheet页写入到文件的不同工作表中
-# df_all[sheet] = df
-# with pd.ExcelWriter(common.FILE_URL_OUT, engine='xlsxwriter') as writer:
-#     for sheet_name, df_sheet in df_all.items():
-#         df_sheet.to_excel(writer, sheet_name=sheet_name, index=False)
-# print("生成文件成功：" + common.FILE_URL_OUT)
+
+
+
+
+merge_df_l = common.concat_df(df_all_L)
+merge_df_p = common.concat_df(df_all_P)
+merge_df_s = common.concat_df(df_all_S)
+
+common.del_file( common.FILE_URL_OUT_MERGE_L, common.FILE_URL_OUT_MERGE_P, common.FILE_URL_OUT_MERGE_S)
+merge_df_l.to_excel(common.FILE_URL_OUT_MERGE_L,index = False)
+merge_df_p.to_excel(common.FILE_URL_OUT_MERGE_P,index = False)
+merge_df_s.to_excel(common.FILE_URL_OUT_MERGE_S,index = False)
+
+common.del_file(common.FILE_URL_OUT, common.FILE_URL_OUT_L, common.FILE_URL_OUT_P, common.FILE_URL_OUT_S)
 df_all_L = common.mulu_list(df_all_L)
 df_all_P = common.mulu_list(df_all_P)
 df_all_S = common.mulu_list(df_all_S)
-with pd.ExcelWriter(common.FILE_URL_OUT_L, engine='xlsxwriter') as writer:
-    for sheet_name, df_sheet in df_all_L.items():
-        df_sheet.to_excel(writer, sheet_name=sheet_name, index=False)
-with pd.ExcelWriter(common.FILE_URL_OUT_P, engine='xlsxwriter') as writer:
-    for sheet_name, df_sheet in df_all_P.items():
-        df_sheet.to_excel(writer, sheet_name=sheet_name, index=False)
-with pd.ExcelWriter(common.FILE_URL_OUT_S, engine='xlsxwriter') as writer:
-    for sheet_name, df_sheet in df_all_S.items():
-        df_sheet.to_excel(writer, sheet_name=sheet_name, index=False)
+
+
+# with pd.ExcelWriter(common.FILE_URL_OUT_L, engine='xlsxwriter') as writer:
+#     for sheet_name, df_sheet in df_all_L.items():
+#         df_sheet.to_excel(writer, sheet_name=sheet_name, index=False)
+# with pd.ExcelWriter(common.FILE_URL_OUT_P, engine='xlsxwriter') as writer:
+#     for sheet_name, df_sheet in df_all_P.items():
+#         df_sheet.to_excel(writer, sheet_name=sheet_name, index=False)
+
+
+def out_to_file(file_url, df_all_list: Dict[Any, pd.DataFrame]):
+    with pd.ExcelWriter(file_url, engine='xlsxwriter') as writer:
+        for sheet_name_file, df_sheet in df_all_list.items():
+            df_sheet.to_excel(writer, sheet_name=sheet_name_file, index=False)
+
+
+out_to_file(common.FILE_URL_OUT_L, df_all_L)
+out_to_file(common.FILE_URL_OUT_P, df_all_P)
+out_to_file(common.FILE_URL_OUT_S, df_all_S)
+
+
+
 print('文件已全部输出完成')

@@ -218,11 +218,11 @@ for sheet in sheets_data:
         if index < 3:
             continue
 
-        if (mainList[index - 3].value_constraint is not None) and len(mainList[index - 3].value_constraint) > 0:
+        if (mainList[index - 3].value_constraint is not None) and len(mainList[index - 3].value_constraint.strip()) > 0:
             df.loc[index, df.columns[
                 col_num_code_field]] = f"验证：{mainList[index - 3].field_cn}({mainList[index - 3].field_en})码值在落标码值范围内"
             # result = [i.split('-')[0] for i in mainList[index - 3].value_constraint.split()]
-            result = [x.split('-')[0] for x in mainList[index - 3].value_constraint.split('\n')]
+            result = [x.split('-')[0].strip() for x in mainList[index - 3].value_constraint.split('\n')]
             result = str(result).replace('[', "(")
             result = str(result).replace(']', ")")
             if mainList[index - 3].is_null in common.field_is_null_flag:
@@ -368,11 +368,11 @@ for sheet in sheets_data:
     for index, row in enumerate(df.iterrows()):
         if index < 3:
             continue
-        if (mainList[index - 3].value_constraint is not None) and len(mainList[index - 3].value_constraint) > 0:
+        if (mainList[index - 3].value_constraint is not None) and len(mainList[index - 3].value_constraint.strip()) > 0:
             df.loc[index, df.columns[
                 col_num_code_field]] = f"验证：{mainList[index - 3].field_cn}({mainList[index - 3].field_en})码值在落标码值范围内"
             # result = [i.split('-')[0] for i in mainList[index - 3].value_constraint.split()]
-            result = [x.split('-')[0] for x in mainList[index - 3].value_constraint.split('\n')]
+            result = [x.split('-')[0].strip() for x in mainList[index - 3].value_constraint.split('\n')]
             result = str(result).replace('[', "(")
             result = str(result).replace(']', ")")
             if mainList[index - 3].is_null in common.field_is_null_flag:
@@ -518,11 +518,11 @@ for sheet in sheets_data:
     for index, row in enumerate(df.iterrows()):
         if index < 3:
             continue
-        if (mainList[index - 3].value_constraint is not None) and len(mainList[index - 3].value_constraint) > 0:
+        if (mainList[index - 3].value_constraint is not None) and len(mainList[index - 3].value_constraint.strip()) > 0:
             df.loc[index, df.columns[
                 col_num_code_field]] = f"验证：{mainList[index - 3].field_cn}({mainList[index - 3].field_en})码值在落标码值范围内"
             # result = [i.split('-')[0] for i in mainList[index - 3].value_constraint.split()]
-            result = [x.split('-')[0] for x in mainList[index - 3].value_constraint.split('\n')]
+            result = [x.split('-')[0].strip() for x in mainList[index - 3].value_constraint.split('\n')]
             result = str(result).replace('[', "(")
             result = str(result).replace(']', ")")
             if mainList[index - 3].is_null in common.field_is_null_flag:

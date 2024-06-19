@@ -42,7 +42,7 @@ file_to_delete = "date_bk.xlsx"
 file_to_delete2 = "date_tar_bk.xlsx"
 # FILE_URL_IN = os.path.join(same_level_directory, "xintou_dev.xlsx")
 # FILE_URL_IN = os.path.join(same_level_directory, "SCB_新一代新信投项目群_新信投系统中间表数据据映射mapping-V0.05.xlsx")
-FILE_URL_IN = os.path.join(same_level_directory, "SCB_新一代新信投项目群_新信投系统中间表数据据映射mapping-V0.08-汇总版20240614.xlsx")
+FILE_URL_IN = os.path.join(same_level_directory, "SCB_新一代新信投项目群_新信投系统中间表数据据映射mapping-V0.081-汇总版.xlsx")
 FILE_URL_OUT = os.path.join(same_level_directory, file_to_delete)
 FILE_URL_OUT2 = os.path.join(same_level_directory, file_to_delete2)
 
